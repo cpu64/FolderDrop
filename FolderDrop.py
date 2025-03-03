@@ -10,6 +10,10 @@ password = "test".encode('utf-8')
 app.secret_key = os.urandom(24) # Can be a string for testing purposes but should be random in production
 # app.secret_key = "abc123" # For testing purposes
 
+@app.route('/FolderDrop-icon.svg')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path , 'static'), 'FolderDrop-icon.svg')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
