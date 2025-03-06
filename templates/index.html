@@ -8,5 +8,9 @@
 </head>
 <body>
     <h1>Directory Contents</h1>
+        <h2>Files</h2>
+    {%for i in files%}
+        <ul><a href="{{ url_for('index', subpath=subpath + '/' + i) }}">{{ i }}</a></ul>
+    {%endfor%}
 </body>
 </html>

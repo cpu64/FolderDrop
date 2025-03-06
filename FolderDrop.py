@@ -25,10 +25,16 @@ def login():
     return render_template('login.html')
 
 @app.route("/")
-def index():
+@app.route('/<path:subpath>')
+def index(subpath=''):
     if password and not session.get('logged_in'):
         return redirect(url_for('login'))  # Redirect to the login page if not logged in
-    return render_template('index.html')
+
+    full_path = os.path.join(app.config['directory'], subpath)
+    if os.path.isdir(full_path):
+        return render_template('index.html', files=os.listdir(full_path), subpath=subpath)
+    return render_template('index.html', files=os.listdir(app.config['directory']))
+
 
 # run the application
 if __name__ == "__main__":
