@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request
+from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
 import argparse
 import os
 
@@ -9,6 +9,16 @@ password = "test".encode('utf-8')
 # Secret key for session management (important for keeping track of user sessions)
 app.secret_key = os.urandom(24) # Can be a string for testing purposes but should be random in production
 # app.secret_key = "abc123" # For testing purposes
+
+def get_contents(path: str):
+    contents = []
+    for f in os.listdir(path):
+        if os.path.isdir(os.path.join(path, f)):
+            contents.append(('d', f))
+        elif os.path.isfile(os.path.join(path, f)):
+            contents.append(('f', f))
+    return contents
+
 
 @app.route('/FolderDrop-icon.svg')
 def favicon():
@@ -32,8 +42,10 @@ def index(subpath=''):
 
     full_path = os.path.join(app.config['directory'], subpath)
     if os.path.isdir(full_path):
-        return render_template('index.html', files=os.listdir(full_path), subpath=subpath)
-    return render_template('index.html', files=os.listdir(app.config['directory']))
+        return render_template('index.html', files=get_contents(full_path), subpath=subpath)
+    elif os.path.isfile(full_path):
+        return send_from_directory(app.config['directory'], subpath, as_attachment=True)
+    abort(404)
 
 
 # run the application
