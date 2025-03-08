@@ -9,12 +9,12 @@
 <body>
     <h1>Directory Contents</h1>
         <table>
-        <tr> <th>Name</th> <th>Size</th> </tr>
+        <tr> <th>Name</th> <th>Size</th> <th>Modification Date</th> </tr>
         {%for i in files%}
             {%if i[0] == 'f':%}
-            <tr> <th><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}" download>{{ i[1] }}</a></th> <th>{{i[2]}}</th> </tr>
+            <tr> <th><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}" download>{{ i[1] }}</a></th> <th>{{i[2]}}</th> <th>{{i[3]}}</th> </tr>
             {%else:%}
-            <tr> <th><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}">{{ i[1] }}</a></th> <th>{{i[2]}}</th> </tr>
+            <tr> <th><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}">{{ i[1] }}</a></th> <th>{{i[2]}}</th> <th>{{i[3]}}</th> </tr>
             {% endif %}
         {%endfor%}
         </table>
