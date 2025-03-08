@@ -1,5 +1,6 @@
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
 import argparse
+import datetime
 import os
 
 app = Flask(__name__)
@@ -27,12 +28,13 @@ def size_of_dir(path: str):
 def get_contents(path: str):
     contents = []
     for f in os.listdir(path):
+        mod_time = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(path, f))).replace(microsecond=0).isoformat(' ')
         if os.path.isdir(os.path.join(path, f)):
             size = size_human_readable(size_of_dir(os.path.join(path, f)))
-            contents.append(('d', f, size))
+            contents.append(('d', f, size, mod_time))
         elif os.path.isfile(os.path.join(path, f)):
             size = size_human_readable(os.path.getsize(os.path.join(path, f)))
-            contents.append(('f', f, size))
+            contents.append(('f', f, size, mod_time))
     return contents
 
 
