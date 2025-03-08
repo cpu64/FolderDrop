@@ -10,13 +10,29 @@ password = "test".encode('utf-8')
 app.secret_key = os.urandom(24) # Can be a string for testing purposes but should be random in production
 # app.secret_key = "abc123" # For testing purposes
 
+def size_human_readable(size):
+    for unit in ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"):
+        if abs(size) < 1024.0:
+            return f"{size:3.1f}{unit}"
+        size /= 1024.0
+    return f"{size:.1f}YiB"
+
+def size_of_dir(path: str):
+    size = 0
+    for path, dirs, files in os.walk(path):
+        for f in files:
+            size += os.path.getsize(os.path.join(path, f))
+    return size
+
 def get_contents(path: str):
     contents = []
     for f in os.listdir(path):
         if os.path.isdir(os.path.join(path, f)):
-            contents.append(('d', f))
+            size = size_human_readable(size_of_dir(os.path.join(path, f)))
+            contents.append(('d', f, size))
         elif os.path.isfile(os.path.join(path, f)):
-            contents.append(('f', f))
+            size = size_human_readable(os.path.getsize(os.path.join(path, f)))
+            contents.append(('f', f, size))
     return contents
 
 
