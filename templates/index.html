@@ -8,13 +8,15 @@
 </head>
 <body>
     <h1>Directory Contents</h1>
-        <h2>Files</h2>
-    {%for i in files%}
-        {%if i[0] == 'f':%}
-        <ul><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}" download>{{ i[1] }}</a></ul>
-        {%else:%}
-        <ul><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}">{{ i[1] }}</a></ul>
-        {% endif %}
-    {%endfor%}
+        <table>
+        <tr> <th>Name</th> <th>Size</th> </tr>
+        {%for i in files%}
+            {%if i[0] == 'f':%}
+            <tr> <th><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}" download>{{ i[1] }}</a></th> <th>{{i[2]}}</th> </tr>
+            {%else:%}
+            <tr> <th><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}">{{ i[1] }}</a></th> <th>{{i[2]}}</th> </tr>
+            {% endif %}
+        {%endfor%}
+        </table>
 </body>
 </html>
