@@ -1,0 +1,32 @@
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(122, 240, 220);
+}
+
+h1 {
+    font-size: 3rem;
+    text-align: center;
+}
+
+table {
+    width: 60%;
+    border-radius: 35px;
+    border: 2px solid black; 
+    padding: 1rem 1rem 1rem 1rem;
+    background-color: cornflowerblue;
+    box-shadow: 20px 20px;
+    margin-bottom: 4rem;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color:rgb(45, 5, 155);
+}
