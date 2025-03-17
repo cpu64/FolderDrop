@@ -5,16 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='FolderDrop-icon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login_style.css') }}">
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST">
-        <label for="password">Password: </label>
-        <input type="password" id="password" name="password" required>
-        <input type="submit" value="Submit">
-    </form>
+    <div class="container">
+        <div class="box">
+            <h1>Provide a password to Login</h1>
+            <form method="POST">
+                <input type="password" id="password" name="password" required>
+                <input type="submit" id="button" value="Submit">
+            </form>
+        </div>
+    </div>
+    
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p>{{ error }}</p>
     {% endif %}
 </body>
 </html>
