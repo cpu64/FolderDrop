@@ -1,11 +1,15 @@
 #pip install PyQt6
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout, QSystemTrayIcon, QMenu
+from PyQt6.QtGui import QIcon, QAction
 from FolderDrop import FolderDrop
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.folderdrop = None
+        self.directory = None
 
         self.setWindowTitle("FolderDrop")
         self.setGeometry(100, 100, 600, 400)
@@ -71,8 +75,23 @@ class MainWindow(QMainWindow):
         main_layout.addLayout(bottom_layout)
 # === BOTTOM LAYOUT END ===
 
-        self.folderdrop = None
-        self.directory = None
+        # Create the system tray icon
+        self.tray_icon = QSystemTrayIcon(QIcon("static\FolderDrop-icon.svg"), self)
+        self.tray_icon.setToolTip("FolderDrop")
+
+        # Create the context menu for the system tray icon
+        tray_menu = QMenu()
+        restore_action = QAction("Restore", self)
+        restore_action.triggered.connect(self.show)
+        tray_menu.addAction(restore_action)
+
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.exit_app)
+        tray_menu.addAction(exit_action)
+
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.activated.connect(self.on_tray_icon_activated)
+
 
     # Shows/hides the logs (readonly QTextEdit)
     def hideLogs(self):
@@ -107,6 +126,18 @@ class MainWindow(QMainWindow):
     def exit_app(self):
         self.stop_folderdrop()
         QApplication.instance().quit()
+
+    # Hides the main window and shows the system tray icon
+    # when the close button (X) in upper right corner is clicked
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
+        self.tray_icon.show()
+
+    # Shows the main window when the system tray icon is clicked
+    def on_tray_icon_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+            self.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
