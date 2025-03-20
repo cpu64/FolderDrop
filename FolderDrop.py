@@ -83,11 +83,22 @@ class FolderDrop:
             return redirect(url_for('login'))
 
         full_path = os.path.join(self.app.config['directory'], subpath)
+
+        # Compute parent directory path
+        parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else ''
+
         if os.path.isdir(full_path):
-            return render_template('index.html', files=self.get_contents(full_path), subpath=subpath)
+            return render_template(
+                'index.html', 
+                files=self.get_contents(full_path), 
+                subpath=subpath, 
+                parent_subpath=parent_subpath
+            )
         elif os.path.isfile(full_path):
             return send_from_directory(self.app.config['directory'], subpath, as_attachment=True)
+
         abort(404)
+
 
     # Start the Flask server
     def run(self):

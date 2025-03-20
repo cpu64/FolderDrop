@@ -22,6 +22,10 @@ table {
     margin-bottom: 4rem;
 }
 
+table th, table td {
+    text-align: left; /* Align text to the left */
+}
+
 a {
     text-decoration: none;
 }
