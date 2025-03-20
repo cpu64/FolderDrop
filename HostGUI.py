@@ -47,6 +47,17 @@ class MainWindow(QMainWindow):
         right_panel.addLayout(directory_grid)
        # END Directory selection grid
 
+       # START Password selection grid 2x2
+        password_grid = QGridLayout()
+        password_grid.addWidget(QLabel("Password:"), 0, 0)
+        self.password_text = QLineEdit()
+        self.password_text.resize(450, 30)
+        self.password_text.setEchoMode(QLineEdit.EchoMode.Password)
+        password_grid.addWidget(self.password_text, 1, 0)
+
+        right_panel.addLayout(password_grid)
+       # END Password selection grid
+
         self.start_button = QPushButton("Start FolderDrop")
         self.start_button.clicked.connect(self.start_folderdrop)
         right_panel.addWidget(self.start_button)
@@ -107,20 +118,32 @@ class MainWindow(QMainWindow):
     # Starts FolderDrop flask server
     def start_folderdrop(self):
         if not self.folderdrop:
-            self.folderdrop = FolderDrop(directory=self.directory_text.text())
+            if not self.directory_text.text():
+                directory = './share'
+            else:
+                directory = self.directory_text.text()
+
+            if not self.password_text.text():
+                password = 'test'
+            else:
+                password = self.password_text.text()
+
+            self.folderdrop = FolderDrop(directory=directory, password=password, host=self)
             self.folderdrop.run()
-            self.logs.append("FolderDrop started.")
         else:
-            self.logs.append("FolderDrop already running.")
+            self.log("FolderDrop already running.")
 
     # Stops FolderDrop flask server
     def stop_folderdrop(self):
         if self.folderdrop:
             self.folderdrop.stop()
             self.folderdrop = None
-            self.logs.append("FolderDrop stopped.")
         else:
-            self.logs.append("FolderDrop not running.")
+            self.log("FolderDrop not running.")
+
+    # Logs a message to the QTextEdit
+    def log(self, message):
+        self.logs.append(message)
 
     # Exits the application
     def exit_app(self):
