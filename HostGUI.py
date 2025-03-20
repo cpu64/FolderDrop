@@ -2,6 +2,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout, QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtCore import Qt
 from FolderDrop import FolderDrop
 
 class MainWindow(QMainWindow):
@@ -10,6 +11,7 @@ class MainWindow(QMainWindow):
 
         self.folderdrop = None
         self.directory = None
+        self.link = None
 
         self.setWindowTitle("FolderDrop")
         self.setGeometry(100, 100, 600, 400)
@@ -25,7 +27,9 @@ class MainWindow(QMainWindow):
     # === LEFT PANEL START ===
         left_panel = QVBoxLayout()
 
-        left_panel.addWidget(QLabel("Links go here"))
+        self.link = QLabel("Share Link")
+        self.link.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        left_panel.addWidget(self.link)
 
         top_layout.addLayout(left_panel, 2)
     # === LEFT PANEL END ===
@@ -65,7 +69,7 @@ class MainWindow(QMainWindow):
         self.stop_button = QPushButton("Stop FolderDrop")
         self.stop_button.clicked.connect(self.stop_folderdrop)
         right_panel.addWidget(self.stop_button)
-        
+
         top_layout.addLayout(right_panel, 1)
     # === RIGHT PANEL END ===
 
@@ -87,7 +91,7 @@ class MainWindow(QMainWindow):
 # === BOTTOM LAYOUT END ===
 
         # Create the system tray icon
-        self.tray_icon = QSystemTrayIcon(QIcon("static\FolderDrop-icon.svg"), self)
+        self.tray_icon = QSystemTrayIcon(QIcon("static/FolderDrop-icon.svg"), self)
         self.tray_icon.setToolTip("FolderDrop")
 
         # Create the context menu for the system tray icon
@@ -129,7 +133,7 @@ class MainWindow(QMainWindow):
                 password = self.password_text.text()
 
             self.folderdrop = FolderDrop(directory=directory, password=password, host=self)
-            self.folderdrop.run()
+            self.link.setText(self.folderdrop.run())
         else:
             self.log("FolderDrop already running.")
 
