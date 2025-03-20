@@ -3,6 +3,9 @@ import argparse
 import datetime
 import os
 import threading
+import igd
+import curio
+import socket
 
 class FolderDrop:
     # Class to share a directory over the internet
@@ -16,6 +19,8 @@ class FolderDrop:
         self.app.secret_key = os.urandom(24)
         self.password = password.encode('utf-8')
         self.server_thread = None
+        self.port = 50505
+        self.gateway = None
 
         self.setup_routes()
 
@@ -89,9 +94,9 @@ class FolderDrop:
 
         if os.path.isdir(full_path):
             return render_template(
-                'index.html', 
-                files=self.get_contents(full_path), 
-                subpath=subpath, 
+                'index.html',
+                files=self.get_contents(full_path),
+                subpath=subpath,
                 parent_subpath=parent_subpath
             )
         elif os.path.isfile(full_path):
@@ -99,16 +104,36 @@ class FolderDrop:
 
         abort(404)
 
+    def get_ip_address(self, ip):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((ip, 80))
+        return s.getsockname()[0]
+
+    async def get_link(self):
+        try:
+            async with curio.timeout_after(2):
+                self.gateway = await igd.find_gateway()
+                ip = self.get_ip_address(self.gateway.ip)
+                mapping = igd.proto.PortMapping(remote_host='', external_port=self.port, internal_port=self.port,
+                    protocol='TCP', ip=ip, enabled=True, description='FolderDrop', duration=12*60*60)
+                external_ip = await self.gateway.get_ext_ip()
+                await self.gateway.add_port_mapping(mapping)
+        except curio.TaskTimeout as e:
+            raise Exception(f"Trying to open a port took too long. It's likely the router doesn't support the required protocols and FolderDrop will not work. (original: {repr(e)})")
+        return f'http://{external_ip}:{self.port}'
 
     # Start the Flask server
     def run(self):
+        link = curio.run(self.get_link)
         self.host.log("FolderDrop started.")
-        self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False})
+        self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False, 'port': self.port, 'host': '0.0.0.0'})
         self.server_thread.start()
+        return link
 
     # Stop the Flask server
     def stop(self):
         if self.server_thread:
+            curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
             self.host.log("FolderDrop stopped.")
             os._exit(0)
         else:
