@@ -28,8 +28,8 @@ class FolderDrop:
     def setup_routes(self):
         self.app.add_url_rule('/FolderDrop-icon.svg', 'favicon', self.favicon)
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
-        self.app.add_url_rule('/', 'index', self.index)
-        self.app.add_url_rule('/<path:subpath>', 'index', self.index)
+        self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
+        self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
 
     # Convert a size in bytes to a human readable format
     def size_human_readable(self, size):
@@ -59,12 +59,17 @@ class FolderDrop:
         for f in os.listdir(path):
             mod_time = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(path, f))).replace(microsecond=0).isoformat(' ')
             if os.path.isdir(os.path.join(path, f)):
-                size = self.size_human_readable(self.size_of_dir(os.path.join(path, f)))
+                size = self.size_of_dir(os.path.join(path, f))
                 contents.append(('d', f, size, mod_time))
             elif os.path.isfile(os.path.join(path, f)):
-                size = self.size_human_readable(os.path.getsize(os.path.join(path, f)))
+                size = os.path.getsize(os.path.join(path, f))
                 contents.append(('f', f, size, mod_time))
-        return contents
+        if session.get("Sort") == 1:
+            contents.sort(key=lambda tup: tup[2], reverse=True)
+        res = []
+        for i in contents:
+            res.append((i[0], i[1], self.size_human_readable(i[2]), i[3]))
+        return res
 
     # Route to serve the favicon
     def favicon(self):
@@ -82,15 +87,9 @@ class FolderDrop:
                 return render_template('login.html', error="Incorrect password, try again.")
         return render_template('login.html')
 
-    # Route to serve the shared directory
-    def index(self, subpath=''):
-        if self.password and not session.get('logged_in'):
-            return redirect(url_for('login'))
-
+    def respond(self, subpath):
         full_path = os.path.join(self.app.config['directory'], subpath)
-
-        # Compute parent directory path
-        parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else ''
+        parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else '' # Compute parent directory path
 
         if os.path.isdir(full_path):
             return render_template(
@@ -102,6 +101,19 @@ class FolderDrop:
         elif os.path.isfile(full_path):
             return send_from_directory(self.app.config['directory'], subpath, as_attachment=True)
 
+    # Route to serve the shared directory
+    def index(self, subpath=''):
+        if self.password and not session.get('logged_in'):
+            return redirect(url_for('login'))
+
+        if request.method == 'POST':
+            if request.form["Size"] == 'Size':
+                session['Sort'] = 1
+                # print("drgrdhdhdhdhtfhdjhdjtfjytdhgtdhfdzikghzrudighndthnidn")
+
+            return self.respond(subpath)
+        elif request.method == 'GET':
+            return self.respond(subpath)
         abort(404)
 
     def get_ip_address(self, ip):
@@ -124,7 +136,7 @@ class FolderDrop:
 
     # Start the Flask server
     def run(self):
-        link = curio.run(self.get_link)
+        # link = curio.run(self.get_link)
         self.host.log("FolderDrop started.")
         self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False, 'port': self.port, 'host': '0.0.0.0'})
         self.server_thread.start()
@@ -133,7 +145,7 @@ class FolderDrop:
     # Stop the Flask server
     def stop(self):
         if self.server_thread:
-            curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
+            # curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
             self.host.log("FolderDrop stopped.")
             os._exit(0)
         else:
