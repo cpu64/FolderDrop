@@ -69,6 +69,7 @@ class FolderDrop:
         res = []
         for i in contents:
             res.append((i[0], i[1], self.size_human_readable(i[2]), i[3]))
+        res.sort(key=lambda tup: tup[0])
         return res
 
     # Route to serve the favicon
