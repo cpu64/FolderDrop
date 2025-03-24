@@ -57,7 +57,7 @@ class FolderDrop:
     def get_contents(self, path: str):
         contents = []
         for f in os.listdir(path):
-            mod_time = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(path, f))).replace(microsecond=0).isoformat(' ')
+            mod_time = os.path.getmtime(os.path.join(path, f))
             if os.path.isdir(os.path.join(path, f)):
                 size = self.size_of_dir(os.path.join(path, f))
                 contents.append(('d', f, size, mod_time))
@@ -66,9 +66,11 @@ class FolderDrop:
                 contents.append(('f', f, size, mod_time))
         if session.get("Sort") == 1:
             contents.sort(key=lambda tup: tup[2], reverse=True)
+        if session.get("Sort") == 2:
+            contents.sort(key=lambda tup: tup[3], reverse=True)
         res = []
         for i in contents:
-            res.append((i[0], i[1], self.size_human_readable(i[2]), i[3]))
+            res.append((i[0], i[1], self.size_human_readable(i[2]), datetime.datetime.fromtimestamp(i[3]).replace(microsecond=0).isoformat(' ')))
         res.sort(key=lambda tup: tup[0])
         return res
 
@@ -108,9 +110,10 @@ class FolderDrop:
             return redirect(url_for('login'))
 
         if request.method == 'POST':
-            if request.form["Size"] == 'Size':
+            if request.form["Sort"] == 'Size':
                 session['Sort'] = 1
-                # print("drgrdhdhdhdhtfhdjhdjtfjytdhgtdhfdzikghzrudighndthnidn")
+            elif request.form["Sort"] == 'Modification Date':
+                session['Sort'] = 2
 
             return self.respond(subpath)
         elif request.method == 'GET':
@@ -137,7 +140,7 @@ class FolderDrop:
 
     # Start the Flask server
     def run(self):
-        # link = curio.run(self.get_link)
+        link = curio.run(self.get_link)
         self.host.log("FolderDrop started.")
         self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False, 'port': self.port, 'host': '0.0.0.0'})
         self.server_thread.start()
@@ -146,7 +149,7 @@ class FolderDrop:
     # Stop the Flask server
     def stop(self):
         if self.server_thread:
-            # curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
+            curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
             self.host.log("FolderDrop stopped.")
             os._exit(0)
         else:
