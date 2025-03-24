@@ -4,12 +4,15 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgb(122, 240, 220);
+    background:
+    linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    linear-gradient(90deg, rgba(19,8,213,1) 0%, rgba(4,83,237,1) 34%, rgba(81,0,255,1) 78%);
 }
 
 h1 {
     font-size: 3rem;
     text-align: center;
+    color: white;
 }
 
 form {
@@ -21,23 +24,27 @@ table {
     margin-left: auto;
     margin-right: auto;
     width: 60%;
-    border-radius: 35px;
-    border: 2px solid black;
+    border-radius: 15px;
+    border: 1px solid rgba(43, 43, 43, 0.568);
     padding: 1rem 1rem 1rem 1rem;
-    background-color: cornflowerblue;
-    box-shadow: 20px 20px;
+    background: rgba(255, 255, 255, 0.1);
     margin-bottom: 4rem;
+    box-shadow: 10px 10px rgba(0, 0, 0, 0.1);
+    border-spacing: 0;
 }
 
-table th, table td {
-    text-align: left; /* Align text to the left */
+th {
+    color: white;
 }
 
 a {
-    text-decoration: none;
+    color: rgb(180, 167, 167);
 }
 
-a:hover {
-    text-decoration: underline;
-    color:rgb(45, 5, 155);
+th {
+    padding: 7px;
+}
+
+.tr:hover {
+    background-color:rgba(0, 0, 0, 0.267);
 }
