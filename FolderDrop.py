@@ -64,6 +64,8 @@ class FolderDrop:
             elif os.path.isfile(os.path.join(path, f)):
                 size = os.path.getsize(os.path.join(path, f))
                 contents.append(('f', f, size, mod_time))
+        if session.get("Sort") == 3:
+            contents.sort(key=lambda tup: tup[1], reverse=False)
         if session.get("Sort") == 1:
             contents.sort(key=lambda tup: tup[2], reverse=True)
         if session.get("Sort") == 2:
@@ -114,6 +116,8 @@ class FolderDrop:
                 session['Sort'] = 1
             elif request.form["Sort"] == 'Modification Date':
                 session['Sort'] = 2
+            elif request.form["Sort"] == 'Name':
+                session['Sort'] = 3
 
             return self.respond(subpath)
         elif request.method == 'GET':
