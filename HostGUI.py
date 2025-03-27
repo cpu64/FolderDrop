@@ -1,20 +1,122 @@
 #pip install PyQt6
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout, QSystemTrayIcon, QMenu
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout, QSystemTrayIcon, QMenu, QCheckBox
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import Qt
 from FolderDrop import FolderDrop
 
-class MainWindow(QMainWindow):
+class StartupWindow(QWidget):
     def __init__(self):
+        super().__init__()
+        self.setWindowTitle("FolderDrop - Startup")
+        self.setGeometry(200, 200, 300, 400)
+
+        main_layout = QVBoxLayout()
+
+        top_layout = QVBoxLayout()
+        top_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # Directory selection
+        directory_grid = QGridLayout()
+        directory_grid.addWidget(QLabel("Directory:"), 0, 0)
+        self.directory_text = QLineEdit()
+        self.directory_text.setPlaceholderText("Default: ./share")
+        directory_grid.addWidget(self.directory_text, 1, 0)
+        self.directory_button = QPushButton("Select directory")
+        self.directory_button.clicked.connect(self.select_directory)
+        directory_grid.addWidget(self.directory_button, 1, 1)
+        top_layout.addLayout(directory_grid)
+
+        # Password input
+        self.check_password = QCheckBox("Require password")
+        self.check_password.setChecked(True)
+        self.check_password.stateChanged.connect(self.toggle_password_fields)
+        top_layout.addWidget(self.check_password)
+
+        self.password_grid = QGridLayout()
+        self.password_grid.addWidget(QLabel("Password:"), 0, 0)
+        self.password_text = QLineEdit()
+        self.password_text.setEchoMode(QLineEdit.EchoMode.Password)
+        self.password_grid.addWidget(self.password_text, 1, 0)
+
+        top_layout.addLayout(self.password_grid)
+
+        # Checkboxes
+        top_layout.addWidget(QLabel("Permissions:"))
+
+        self.check_renaming = QCheckBox("Allow renaming files")
+        self.check_renaming.setChecked(True)
+        top_layout.addWidget(self.check_renaming)
+
+        self.check_deleting = QCheckBox("Allow deleting files")
+        self.check_deleting.setChecked(True)
+        top_layout.addWidget(self.check_deleting)
+
+        self.check_downloading = QCheckBox("Allow downloading files")
+        self.check_downloading.setChecked(True)
+        top_layout.addWidget(self.check_downloading)
+
+        self.check_uploading = QCheckBox("Allow uploading files")
+        self.check_uploading.setChecked(True)
+        top_layout.addWidget(self.check_uploading)
+
+        main_layout.addLayout(top_layout)
+
+
+
+        bottom_layout = QVBoxLayout()
+        bottom_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
+
+        self.check_remember = QCheckBox("Remember settings")
+        self.check_remember.setChecked(False)
+        bottom_layout.addWidget(self.check_remember)
+
+        # Start button
+        self.start_button = QPushButton("Start FolderDrop")
+        self.start_button.setMinimumHeight(50)
+        self.start_button.clicked.connect(self.start_main_window)
+        bottom_layout.addWidget(self.start_button)
+
+        main_layout.addLayout(bottom_layout)
+
+        self.setLayout(main_layout)
+
+    def toggle_password_fields(self):
+        enabled = self.check_password.isChecked()
+        for i in range(self.password_grid.count()):
+            widget = self.password_grid.itemAt(i).widget()
+            if widget:
+                widget.setVisible(enabled)
+
+    def select_directory(self):
+        self.directory_text.setText(QFileDialog.getExistingDirectory(self, 'Select Folder'))
+
+    def start_main_window(self):
+        directory = self.directory_text.text() or './share'
+        password = self.password_text.text() or None
+        check_renaming = self.check_renaming.isChecked()
+        check_deleting = self.check_deleting.isChecked()
+        check_downloading = self.check_downloading.isChecked()
+        check_uploading = self.check_uploading.isChecked()
+        
+        self.main_window = MainWindow(directory, password, check_renaming, check_deleting, check_downloading, check_uploading)
+        self.main_window.show()
+        self.close()
+
+class MainWindow(QMainWindow):
+    def __init__(self, directory, password, check_renaming=True, check_deleting=True, check_downloading=True, check_uploading=True):
         super().__init__()
 
         self.folderdrop = None
-        self.directory = None
-        self.link = None
+        self.directory = directory
+        self.password = password
+        self.check_renaming = check_renaming
+        self.check_deleting = check_deleting
+        self.check_downloading = check_downloading
+        self.check_uploading = check_uploading
 
         self.setWindowTitle("FolderDrop")
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 600, 300)
 
         central_widget = QWidget()  # Create a central widget
         self.setCentralWidget(central_widget)  # Set it as the central widget
@@ -23,9 +125,11 @@ class MainWindow(QMainWindow):
 
 # === TOP LAYOUT START ===
         top_layout = QHBoxLayout()
+        top_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
     # === LEFT PANEL START ===
         left_panel = QVBoxLayout()
+        left_panel.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         link_grid = QGridLayout()
 
@@ -65,37 +169,11 @@ class MainWindow(QMainWindow):
 
     # === RIGHT PANEL START ===
         right_panel = QVBoxLayout()
-
-       # START Directory selection grid 2x2
-        directory_grid = QGridLayout()
-        directory_grid.addWidget(QLabel("Directory:"), 0, 0)
-        self.directory_text = QLineEdit()
-        self.directory_text.resize(450, 30)
-        directory_grid.addWidget(self.directory_text, 1, 0)
-
-        self.directory_button = QPushButton("Select directory")
-        self.directory_button.clicked.connect(self.select_directory)
-        directory_grid.addWidget(self.directory_button, 1, 1)
-
-        right_panel.addLayout(directory_grid)
-       # END Directory selection grid
-
-       # START Password selection grid 2x2
-        password_grid = QGridLayout()
-        password_grid.addWidget(QLabel("Password:"), 0, 0)
-        self.password_text = QLineEdit()
-        self.password_text.resize(450, 30)
-        self.password_text.setEchoMode(QLineEdit.EchoMode.Password)
-        password_grid.addWidget(self.password_text, 1, 0)
-
-        right_panel.addLayout(password_grid)
-       # END Password selection grid
-
-        self.start_button = QPushButton("Start FolderDrop")
-        self.start_button.clicked.connect(self.start_folderdrop)
-        right_panel.addWidget(self.start_button)
+        right_panel.setAlignment(Qt.AlignmentFlag.AlignRight)
+        right_panel.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.stop_button = QPushButton("Stop FolderDrop")
+        self.stop_button.setStyleSheet("color: red;")
         self.stop_button.clicked.connect(self.stop_folderdrop)
         right_panel.addWidget(self.stop_button)
 
@@ -107,12 +185,16 @@ class MainWindow(QMainWindow):
 
 # === BOTTOM LAYOUT START ===
         bottom_layout = QVBoxLayout()
+        bottom_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
+
         self.log_button = QPushButton("Logs:")
         self.log_button.setMaximumSize(45, 30)
         self.log_button.clicked.connect(self.hideLogs)
         bottom_layout.addWidget(self.log_button)
 
         self.logs = QTextEdit()
+        self.logs.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        self.logs.setMaximumHeight(200)
         self.logs.setReadOnly(True)
         bottom_layout.addWidget(self.logs)
 
@@ -137,6 +219,8 @@ class MainWindow(QMainWindow):
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
         self.tray_icon.show()
 
+        self.start_folderdrop()
+
 
     # Shows/hides the logs (readonly QTextEdit)
     def hideLogs(self):
@@ -152,18 +236,8 @@ class MainWindow(QMainWindow):
     # Starts FolderDrop flask server
     def start_folderdrop(self):
         if not self.folderdrop:
-            if not self.directory_text.text():
-                directory = './share'
-            else:
-                directory = self.directory_text.text()
-
-            if not self.password_text.text():
-                password = 'test'
-            else:
-                password = self.password_text.text()
-
-            self.folderdrop = FolderDrop(directory=directory, password=password, host=self)
-            self.link.setText(self.folderdrop.run())
+            self.folderdrop = FolderDrop(directory=self.directory, password=self.password, host=self)
+            self.link_localhost.setText(self.folderdrop.run())
         else:
             self.log("FolderDrop already running.")
 
@@ -197,7 +271,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyle
-    window = MainWindow()
-    window.show()
+    startup = StartupWindow()
+    startup.show()
     sys.exit(app.exec())
