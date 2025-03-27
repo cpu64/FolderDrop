@@ -98,7 +98,7 @@ class StartupWindow(QWidget):
         check_deleting = self.check_deleting.isChecked()
         check_downloading = self.check_downloading.isChecked()
         check_uploading = self.check_uploading.isChecked()
-        
+
         self.main_window = MainWindow(directory, password, check_renaming, check_deleting, check_downloading, check_uploading)
         self.main_window.show()
         self.close()
@@ -237,7 +237,10 @@ class MainWindow(QMainWindow):
     def start_folderdrop(self):
         if not self.folderdrop:
             self.folderdrop = FolderDrop(directory=self.directory, password=self.password, host=self)
-            self.link_localhost.setText(self.folderdrop.run())
+            links = self.folderdrop.run()
+            self.link_localhost.setText(links[0])
+            self.link_localnetwork.setText(links[1])
+            self.link_external.setText(links[2])
         else:
             self.log("FolderDrop already running.")
 
