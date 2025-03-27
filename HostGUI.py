@@ -27,9 +27,38 @@ class MainWindow(QMainWindow):
     # === LEFT PANEL START ===
         left_panel = QVBoxLayout()
 
-        self.link = QLabel("Share Link")
-        self.link.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        left_panel.addWidget(self.link)
+        link_grid = QGridLayout()
+
+        # example: <a href='http://localhost:5000'>http://localhost:5000</a>
+        self.link_localhost = QLabel("<a href='No Link Available'>No Link Available</a>")
+        self.link_localhost.setTextFormat(Qt.TextFormat.RichText)
+        self.link_localhost.setOpenExternalLinks(True)
+        link_grid.addWidget(self.link_localhost, 0, 0)
+
+        self.button_localhost = QPushButton("Copy to clipboard")
+        self.button_localhost.clicked.connect(lambda: QApplication.clipboard().setText(self.link_localhost.text().split("'")[1].split("'")[0]))
+        link_grid.addWidget(self.button_localhost, 0, 1)
+
+        self.link_localnetwork = QLabel("<a href='No Link Available'>No Link Available</a>")
+        self.link_localnetwork.setTextFormat(Qt.TextFormat.RichText)
+        self.link_localnetwork.setOpenExternalLinks(True)
+        link_grid.addWidget(self.link_localnetwork, 1, 0)
+
+        self.button_localnetwork = QPushButton("Copy to clipboard")
+        self.button_localnetwork.clicked.connect(lambda: QApplication.clipboard().setText(self.link_localnetwork.text().split("'")[1].split("'")[0]))
+        link_grid.addWidget(self.button_localnetwork, 1, 1)
+
+        self.link_external = QLabel("<a href='No Link Available'>No Link Available</a>")
+        self.link_external.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.link_external.setTextFormat(Qt.TextFormat.RichText)
+        self.link_external.setOpenExternalLinks(True)
+        link_grid.addWidget(self.link_external, 2, 0)
+
+        self.button_external = QPushButton("Copy to clipboard")
+        self.button_external.clicked.connect(lambda: QApplication.clipboard().setText(self.link_external.text().split("'")[1].split("'")[0]))
+        link_grid.addWidget(self.button_external, 2, 1)
+
+        left_panel.addLayout(link_grid)
 
         top_layout.addLayout(left_panel, 2)
     # === LEFT PANEL END ===
