@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
 
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.activated.connect(self.on_tray_icon_activated)
+        self.tray_icon.show()
 
 
     # Shows/hides the logs (readonly QTextEdit)
@@ -159,7 +160,6 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         event.ignore()
         self.hide()
-        self.tray_icon.show()
 
     # Shows the main window when the system tray icon is clicked
     def on_tray_icon_activated(self, reason):
