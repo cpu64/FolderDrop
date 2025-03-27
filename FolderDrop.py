@@ -84,11 +84,11 @@ class FolderDrop:
     def login(self):
         if request.method == 'POST':
             if self.password == request.form["password"].encode('utf-8'):
-                self.host.log("Correct password entered.")
+                # self.host.log("Correct password entered.")
                 session['logged_in'] = True
                 return redirect(url_for('index'))
             else:
-                self.host.log("Incorrect password entered.")
+                # self.host.log("Incorrect password entered.")
                 return render_template('login.html', error="Incorrect password, try again.")
         return render_template('login.html')
 
