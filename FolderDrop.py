@@ -124,31 +124,32 @@ class FolderDrop:
             return self.respond(subpath)
         abort(404)
 
-    def get_ip_address(self, ip):
+    def get_local_ip(self, ip):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect((ip, 80))
         return s.getsockname()[0]
 
-    async def get_link(self):
+    async def setup_networking(self):
         try:
             async with curio.timeout_after(2):
                 self.gateway = await igd.find_gateway()
-                ip = self.get_ip_address(self.gateway.ip)
+                local_ip = self.get_local_ip(self.gateway.ip)
                 mapping = igd.proto.PortMapping(remote_host='', external_port=self.port, internal_port=self.port,
-                    protocol='TCP', ip=ip, enabled=True, description='FolderDrop', duration=12*60*60)
-                external_ip = await self.gateway.get_ext_ip()
+                    protocol='TCP', ip=local_ip, enabled=True, description='FolderDrop', duration=12*60*60)
+                public_ip = await self.gateway.get_ext_ip()
                 await self.gateway.add_port_mapping(mapping)
         except curio.TaskTimeout as e:
             raise Exception(f"Trying to open a port took too long. It's likely the router doesn't support the required protocols and FolderDrop will not work. (original: {repr(e)})")
-        return f'http://{external_ip}:{self.port}'
 
     # Start the Flask server
     def run(self):
-        link = curio.run(self.get_link)
+        curio.run(self.setup_networking)
         self.host.log("FolderDrop started.")
         self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False, 'port': self.port, 'host': '0.0.0.0'})
         self.server_thread.start()
-        return link
+        return (f"<a href='http://localhost:{self.port}'>http://localhost:{self.port}</a>",
+                f"<a href='local'>local</a>",
+                f"<a href='http://public'>http://public</a>")
 
     # Stop the Flask server
     def stop(self):
