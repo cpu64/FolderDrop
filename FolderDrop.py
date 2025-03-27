@@ -140,15 +140,16 @@ class FolderDrop:
                 await self.gateway.add_port_mapping(mapping)
         except curio.TaskTimeout as e:
             raise Exception(f"Trying to open a port took too long. It's likely the router doesn't support the required protocols and FolderDrop will not work. (original: {repr(e)})")
+        return local_ip
 
     # Start the Flask server
     def run(self):
-        curio.run(self.setup_networking)
+        local_ip = curio.run(self.setup_networking)
         self.host.log("FolderDrop started.")
         self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False, 'port': self.port, 'host': '0.0.0.0'})
         self.server_thread.start()
         return (f"<a href='http://localhost:{self.port}'>http://localhost:{self.port}</a>",
-                f"<a href='local'>local</a>",
+                f"<a href='http://{local_ip}:{self.port}'>http://{local_ip}:{self.port}</a>",
                 f"<a href='http://public'>http://public</a>")
 
     # Stop the Flask server
