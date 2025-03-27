@@ -12,12 +12,12 @@ class FolderDrop:
     # directory: The directory to share
     # password: The password to access the shared directory
     # host: The host object to log messages to
-    def __init__(self, directory='./share', password='test', host=None):
+    def __init__(self, directory='./share', password=None, host=None):
         self.app = Flask(__name__)
         self.app.config['directory'] = directory
         self.host = host
         self.app.secret_key = os.urandom(24)
-        self.password = password.encode('utf-8')
+        self.password = password.encode('utf-8') if password else None
         self.server_thread = None
         self.port = 50505
         self.gateway = None
