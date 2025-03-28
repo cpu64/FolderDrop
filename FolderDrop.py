@@ -92,6 +92,12 @@ class FolderDrop:
                 return render_template('login.html', error="Incorrect password, try again.")
         return render_template('login.html')
 
+    # Route to respond to requests for the shared directory
+    # subpath: The path to the requested file or directory
+    # Returns a rendered HTML template for directories or a file download for files
+    # If the requested path is a directory, it will return a list of files and directories in that directory
+    # If the requested path is a file, it will return the file for download
+    # If the requested path is not found, it will return a 404 error
     def respond(self, subpath):
         full_path = os.path.join(self.app.config['directory'], subpath)
         parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else '' # Compute parent directory path
@@ -124,11 +130,16 @@ class FolderDrop:
             return self.respond(subpath)
         abort(404)
 
+    # Get the local IP address by connecting to the router's IP address
     def get_local_ip(self, ip):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect((ip, 80))
         return s.getsockname()[0]
 
+    # Setup the networking by finding the gateway and opening a port
+    # Returns the local IP address of the machine running the script
+    # Raises an exception if the port cannot be opened
+    # Raises an exception if the router doesn't support the required protocols
     async def setup_networking(self):
         try:
             async with curio.timeout_after(2):
@@ -140,14 +151,23 @@ class FolderDrop:
                 await self.gateway.add_port_mapping(mapping)
         except curio.TaskTimeout as e:
             raise Exception(f"Trying to open a port took too long. It's likely the router doesn't support the required protocols and FolderDrop will not work. (original: {repr(e)})")
+        except igd.soap.HttpError as e:
+            raise Exception(f"Failed to open a port. FolderDrop will not work. (original: {repr(e)})")
         return local_ip
 
     # Start the Flask server
     def run(self):
-        local_ip = curio.run(self.setup_networking)
+        local_ip = ""
+        try:
+            local_ip = curio.run(self.setup_networking)
+        except Exception as e:
+            self.host.log(f"Error: {repr(e)}")
+            local_ip = self.get_local_ip(self.gateway.ip)
+
         self.host.log("FolderDrop started.")
         self.server_thread = threading.Thread(target=self.app.run, kwargs={'debug': True, 'use_reloader': False, 'port': self.port, 'host': '0.0.0.0'})
         self.server_thread.start()
+
         return (f"<a href='http://localhost:{self.port}'>http://localhost:{self.port}</a>",
                 f"<a href='http://{local_ip}:{self.port}'>http://{local_ip}:{self.port}</a>",
                 f"<a href='http://public'>http://public</a>")
@@ -155,7 +175,10 @@ class FolderDrop:
     # Stop the Flask server
     def stop(self):
         if self.server_thread:
-            curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
+            try:
+                curio.run(self.gateway.delete_port_mapping, self.port, 'TCP')
+            except Exception as e:
+                self.host.log(f"Error: {repr(e)}")
             self.host.log("FolderDrop stopped.")
             os._exit(0)
         else:
