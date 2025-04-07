@@ -11,6 +11,7 @@ class SetupWindow(QWidget):
         super().__init__()
         self.config=config
         self.setWindowTitle("FolderDrop - Setup")
+        self.setWindowIcon(QIcon("static/FolderDrop-icon.svg"))
         self.setGeometry(200, 200, 300, 400)
 
         main_layout = QVBoxLayout()
@@ -113,6 +114,7 @@ class MainWindow(QMainWindow):
     def __init__(self, ips, port):
         super().__init__()
         self.setWindowTitle("FolderDrop")
+        self.setWindowIcon(QIcon("static/FolderDrop-icon.svg"))
         self.setGeometry(100, 100, 600, 300)
 
         central_widget = QWidget()  # Create a central widget
