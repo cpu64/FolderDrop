@@ -54,6 +54,7 @@ th {
 
 .tr:hover {
     background-color:rgba(0, 0, 0, 0.267);
+    cursor: pointer;
 }
 
 .url a {
@@ -69,15 +70,40 @@ th {
     z-index: 1000;
     border-radius: 12px;
     display: none;
+
 }
 
 .context-menu li {
     cursor: pointer;
     color: white;
     padding: 10px;
+    list-style-type: none;
 }
 
 .context-menu li:hover {
     background-color: rgba(197, 195, 195, 0.267);
     border-radius: 12px;
+}
+
+.btn {
+    width: 30%;
+    border: none;
+    height: 4vh;
+    border-radius: 25px;
+    font-size: 80%;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(238, 236, 236, 0.25);
+    outline: none;
+    color: white;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: rgba(197, 195, 195, 0.568);
+}
+
+ul {
+    padding: 2px;
+    margin: 0px;
 }
