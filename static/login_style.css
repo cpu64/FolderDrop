@@ -9,9 +9,7 @@ body {
     background-attachment: fixed;
     justify-content: center;
     align-items: center;
-    background:
-    linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-    linear-gradient(90deg, rgba(19,8,213,1) 0%, rgba(4,83,237,1) 34%, rgba(81,0,255,1) 78%);
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 70%), url("background_img.jpg");
 }
 
 
@@ -29,6 +27,7 @@ body {
     border: 1px solid rgba(43, 43, 43, 0.568);
     background: rgba(255, 255, 255, 0.1);
     box-shadow: 10px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(12px);
 }
 
 h1 {
@@ -52,7 +51,7 @@ margin-left: 1%;
 border-radius: 25px;
 padding-left: 1rem;
 font-size: medium;
-background-color: rgba(0, 0, 0, 0.267);
+background-color: rgba(0, 0, 0, 0.5);
 outline: none;
 border: none;
 color: white;
@@ -66,7 +65,7 @@ border-radius: 25px;
 font-size: 80%;
 font-weight: bold;
 text-align: center;
-background-color: rgba(0, 0, 0, 0.267);
+background-color: rgba(0, 0, 0, 0.5);
 outline: none;
 transition: background-color 0.2s linear;
 color: white;
