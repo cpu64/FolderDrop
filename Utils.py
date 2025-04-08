@@ -4,7 +4,6 @@ import igd
 import curio
 import socket
 from enum import IntEnum
-import netifaces
 from requests import get
 
 class Sort(IntEnum):
@@ -91,6 +90,7 @@ async def get_gateway():
             gateway = gateway.ip
     except:
         try:
+            import netifaces
             gateway = netifaces.gateways()['default'][netifaces.AF_INET][0]
             if not ping(gateway, 80, 1):
                 raise Exception
