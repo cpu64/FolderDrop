@@ -43,23 +43,32 @@ class FolderDrop():
             except Exception as e:
                 print(e)
 
+        cert_file = './server.crt'
+        key_file = './server.key'
+        create_self_signed_cert(ips, cert_file, key_file)
+
         flaskApp = FlaskApp(vars(args))
         cherrypy.tree.graft(flaskApp.app.wsgi_app, '/')
         cherrypy.config.update({
             'server.socket_host': '0.0.0.0',
             'server.socket_port': args.port,
             'engine.autoreload.on': False,
-            'server.ssl_module': 'pyopenssl',
-            'server.ssl_context': create_self_signed_cert(ips)
+            'server.ssl_module': 'builtin',
+            'server.ssl_certificate': cert_file,
+            'server.ssl_private_key': key_file
         })
 
         if self.args.gui:
             window = MainWindow(ips, args.port)
             window.show()
             cherrypy.engine.start()
+            os.remove(key_file)
+            os.remove(cert_file)
             self.app.exec()
         else:
             cherrypy.engine.start()
+            os.remove(key_file)
+            os.remove(cert_file)
             line = "continue"
             while line!= "stop":
                 line = input().strip()
