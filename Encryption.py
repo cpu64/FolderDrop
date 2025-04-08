@@ -13,9 +13,7 @@ import tempfile
 
 
 # Function to create a self-signed certificate with multiple IPs
-def create_self_signed_cert(ips: list):
-    cert_file = './server.crt'
-    key_file = './server.key'
+def create_self_signed_cert(ips: list[str], cert_file, key_file):
 
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
@@ -61,12 +59,3 @@ def create_self_signed_cert(ips: list):
 
     with open(cert_file, "wb") as cert_out:
         cert_out.write(certificate.public_bytes(serialization.Encoding.PEM))
-
-    context = SSL.Context(SSL.TLS_SERVER_METHOD)
-    context.use_certificate_file(cert_file)
-    context.use_privatekey_file(key_file)
-
-    os.remove(key_file)
-    os.remove(cert_file)
-
-    return context
