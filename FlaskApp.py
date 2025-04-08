@@ -1,5 +1,4 @@
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
-from flask_session import Session
 from Utils import get_contents, Sort
 import os
 
@@ -10,8 +9,9 @@ class FlaskApp:
     # host: The host object to log messages to
     def __init__(self, config):
         self.app = Flask(__name__)
-        self.app.config.update(SESSION_PERMANENT=False,SESSION_TYPE="filesystem")
+        self.app.config.update(SESSION_PERMANENT=False,SESSION_COOKIE_SECURE=True)
         self.app.secret_key = os.urandom(24)
+        self.login_token = os.urandom(100)
         self.config = config
         self.setup_routes()
 
@@ -31,7 +31,7 @@ class FlaskApp:
         if request.method == 'POST':
             if self.config['password'].encode('utf-8') == request.form["password"].encode('utf-8'):
                 # self.host.log("Correct password entered.")
-                session['logged_in'] = True
+                session['logged_in'] = self.login_token
                 return redirect(url_for('index'))
             else:
                 # self.host.log("Incorrect password entered.")
@@ -55,7 +55,7 @@ class FlaskApp:
 
     # Route to serve the shared directory
     def index(self, subpath=''):
-        if self.config["password"] and not session.get('logged_in'):
+        if self.config["password"] and session.get('logged_in') != self.login_token:
             return redirect(url_for('login'))
         if not session.get('Sort'):
             session['Sort'] = Sort.SIZE_DESCENDING
