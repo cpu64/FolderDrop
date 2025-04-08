@@ -67,7 +67,7 @@ class FlaskApp:
                 session['Sort'] = session['Sort']%2 + Sort.NAME_ASCENDING
             elif request.form["Sort"] == 'Size':
                 session['Sort'] = session['Sort']%2 + Sort.SIZE_ASCENDING
-            elif request.form["Sort"] == 'Modification Date':
+            elif request.form["Sort"] == 'Last modified':
                 session['Sort'] = session['Sort']%2 + Sort.DATE_ASCENDING
             return self.respond(subpath)
         abort(404)
