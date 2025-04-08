@@ -20,7 +20,7 @@ def create_self_signed_cert(ips: list):
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
     subject = Name([
-        NameAttribute(NameOID.COUNTRY_NAME, "__"),
+        NameAttribute(NameOID.COUNTRY_NAME, "US"),
         NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "FolderDrop"),
         NameAttribute(NameOID.LOCALITY_NAME, "FolderDrop"),
         NameAttribute(NameOID.ORGANIZATION_NAME, "FolderDrop"),
