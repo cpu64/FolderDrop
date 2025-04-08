@@ -78,7 +78,7 @@ class FolderDrop():
     def close(self):
         if self.gateway:
             try:
-                curio.run(gateway.delete_port_mapping, args.port, 'TCP')
+                curio.run(self.gateway.delete_port_mapping, args.port, 'TCP')
                 # print(curio.run(gateway.get_port_mappings()))
             except Exception as e:
                 print(f"Error: {repr(e)}")
