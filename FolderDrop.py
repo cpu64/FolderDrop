@@ -33,7 +33,7 @@ class FolderDrop():
         if not os.path.isdir(args.directory):
             raise NotADirectoryError(f"directory: '{args.directory}' doesn't exist")
 
-        local_ip = get_local_ip(curio.run(get_gateway()) or "8.8.8.8")
+        local_ip = get_local_ip("8.8.8.8" or curio.run(get_gateway()))
         public_ip = curio.run(get_public_ip())
         ips = ["127.0.0.1", local_ip, public_ip] if public_ip else ["127.0.0.1", local_ip]
 
