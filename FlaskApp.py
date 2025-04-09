@@ -1,13 +1,14 @@
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
 from Utils import get_contents, Sort
-import os
+import os, uuid
 
 class FlaskApp:
     # Class to share a directory over the internet
     # directory: The directory to share
     # password: The password to access the shared directory
     # host: The host object to log messages to
-    def __init__(self, config):
+    def __init__(self, config, logger=None):
+        self.logger = logger
         self.app = Flask(__name__)
         self.app.config.update(SESSION_PERMANENT=False,SESSION_COOKIE_SECURE=True)
         self.app.secret_key = os.urandom(24)
@@ -15,8 +16,25 @@ class FlaskApp:
         self.config = config
         self.setup_routes()
 
+    # Method to log messages to the host object or print them to the console
+    def log(self, message):
+        if not message:
+            return
+        
+        user_id = session.get('user_id', 'Unknown User')
+
+        if self.logger:
+            self.logger(f"[User {user_id}] {message}")
+        else:
+            print(f"[User {user_id}] {message}")
+
+    def assign_user_id(self):
+        if 'user_id' not in session:
+            session['user_id'] = str(uuid.uuid4())[:8]  # usng the first 8 characters of UUID
+
     # Setup the routes for the Flask app
     def setup_routes(self):
+        self.app.before_request(self.assign_user_id)
         self.app.add_url_rule('/FolderDrop-icon.svg', 'favicon', self.favicon)
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
         self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
@@ -30,11 +48,11 @@ class FlaskApp:
     def login(self):
         if request.method == 'POST':
             if self.config['password'].encode('utf-8') == request.form["password"].encode('utf-8'):
-                # self.host.log("Correct password entered.")
+                self.log("Correct password entered.")
                 session['logged_in'] = self.login_token
                 return redirect(url_for('index'))
             else:
-                # self.host.log("Incorrect password entered.")
+                self.log("Incorrect password entered.")
                 return render_template('login.html', error="Incorrect password, try again.")
         return render_template('login.html')
 

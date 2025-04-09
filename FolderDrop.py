@@ -47,7 +47,7 @@ class FolderDrop():
         key_file = './server.key'
         create_self_signed_cert(ips, cert_file, key_file)
 
-        flaskApp = FlaskApp(vars(args))
+        flaskApp = FlaskApp(vars(args), self.log)
         cherrypy.tree.graft(flaskApp.app.wsgi_app, '/')
         cherrypy.config.update({
             'server.socket_host': '0.0.0.0',
@@ -61,6 +61,7 @@ class FolderDrop():
         if self.args.gui:
             window = MainWindow(ips, args.port)
             window.show()
+            self.gui=window
             cherrypy.engine.start()
             os.remove(key_file)
             os.remove(cert_file)
@@ -74,6 +75,13 @@ class FolderDrop():
                 line = input().strip()
         self.close()
 
+    def log(self, message):
+        if self.args.gui:
+            self.gui.log(message)
+        else:
+            print(message)
+
+        # TODO: log to file
 
     def close(self):
         if self.gateway:
