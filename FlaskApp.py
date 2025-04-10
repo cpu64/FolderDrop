@@ -35,14 +35,26 @@ class FlaskApp:
     # Setup the routes for the Flask app
     def setup_routes(self):
         self.app.before_request(self.assign_user_id)
-        self.app.add_url_rule('/FolderDrop-icon.svg', 'favicon', self.favicon)
+        self.app.add_url_rule('/scripts/<path:filename>', 'scripts', self.serve_scripts)
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
         self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
+        #self.app.add_url_rule('/<path:subpath>', 'download', self.download, methods=['GET', 'POST'])
+        self.app.add_url_rule('/load_table/<path:subpath>', 'load_table', self.load_table, methods=['GET'])
+        self.app.add_url_rule('/load_table/', 'load_table', self.load_table, methods=['GET'])
 
-    # Route to serve the favicon
-    def favicon(self):
-        return send_from_directory(os.path.join(self.app.root_path , 'static'), 'FolderDrop-icon.svg')
+    # Route to serve static files (JavaScript) from the 'scripts' directory
+    def serve_scripts(self, filename):
+        return send_from_directory(os.path.join(self.app.root_path, 'scripts'), filename)
+    
+    # Route to serve the table content dynamically
+    def load_table(self, subpath=''):
+        full_path = os.path.join(self.config['directory'], subpath)
+        parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else ''
+
+        if os.path.isdir(full_path):
+            return render_template('table.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath)
+        abort(404)
 
     # Route to login to the shared directory
     def login(self):
