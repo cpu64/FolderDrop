@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
+from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort, jsonify
 from Utils import get_contents, Sort
 import os, uuid
 
@@ -39,13 +39,32 @@ class FlaskApp:
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
         self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
-        #self.app.add_url_rule('/<path:subpath>', 'download', self.download, methods=['GET', 'POST'])
         self.app.add_url_rule('/load_table/<path:subpath>', 'load_table', self.load_table, methods=['GET'])
         self.app.add_url_rule('/load_table/', 'load_table', self.load_table, methods=['GET'])
+        self.app.add_url_rule('/delete/<path:subpath>', 'delete_item', self.delete_item, methods=['DELETE'])
+        self.app.add_url_rule('/delete/', 'delete_item', self.delete_item, methods=['DELETE'])
 
     # Route to serve static files (JavaScript) from the 'scripts' directory
     def serve_scripts(self, filename):
         return send_from_directory(os.path.join(self.app.root_path, 'scripts'), filename)
+    
+    # Route to delete a file or directory
+    # subpath: The path to the file or directory to delete
+    def delete_item(self, subpath):
+        full_path = os.path.join(self.config['directory'], subpath)
+        full_path = full_path.replace("\\", "/") 
+        self.log(f"Attempting to delete: {full_path}")
+
+        try:
+            if os.path.isdir(full_path):
+                os.rmdir(full_path)
+            else:
+                os.remove(full_path)
+            return jsonify(success=True)
+        except Exception as e:
+            self.log(f"Error deleting {full_path}: {e}")
+            return jsonify(success=False, error=str(e)), 500
+
     
     # Route to serve the table content dynamically
     def load_table(self, subpath=''):

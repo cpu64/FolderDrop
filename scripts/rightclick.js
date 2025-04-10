@@ -1,3 +1,5 @@
+let selectedItemPath = null;
+
 function setupContextMenu() {
     const rows = document.querySelectorAll(".tr.clickable");
     const contextMenu = document.getElementById("contextMenu");
@@ -5,6 +7,8 @@ function setupContextMenu() {
     rows.forEach(row => {
         row.addEventListener("contextmenu", e => {
             e.preventDefault();
+            selectedItemPath = row.getAttribute("data-path");
+
             contextMenu.style.top = `${e.pageY}px`;
             contextMenu.style.left = `${e.pageX}px`;
             contextMenu.style.display = "block";
@@ -15,29 +19,36 @@ function setupContextMenu() {
         contextMenu.style.display = "none";
     });
 
-    // Add listeners to context menu items if needed
-    document.getElementById("download").addEventListener("click", () => {
-        console.log("Download clicked");
-        // implement your download logic here
-    });
+    document.getElementById("delete").addEventListener("click", async () => {
+        console.log(`Are you sure you want to delete "${selectedItemPath}"?`);
+        if (!selectedItemPath) return;
 
-    document.getElementById("rename").addEventListener("click", () => {
-        console.log("Rename clicked");
-        // implement rename logic
-    });
+        const confirmed = confirm(`Are you sure you want to delete "${selectedItemPath}"?`);
+        if (!confirmed) return;
 
-    document.getElementById("delete").addEventListener("click", () => {
-        console.log("Delete clicked");
-        // implement delete logic
+        try {
+            if (selectedItemPath.startsWith("/")) {
+                selectedItemPath = selectedItemPath.slice(1);
+            }
+            
+            const response = await fetch(`/delete/${selectedItemPath}`, {method: "DELETE"});
+
+            if (response.ok) {
+                const row = document.querySelector(`.tr.clickable[data-path="${CSS.escape(selectedItemPath)}"]`);
+                row?.remove();
+                console.log(`"${selectedItemPath}" deleted successfully.`);
+            } else {
+                console.error("Failed to delete");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+
+        contextMenu.style.display = "none";
+        selectedItemPath = null;
     });
 }
 
-// Initial load
-document.addEventListener("DOMContentLoaded", () => {
-    setupContextMenu();
-});
-
-// When HTMX updates #table-container
 document.body.addEventListener("htmx:afterSwap", (e) => {
     if (e.target.id === "table-container") {
         setupContextMenu();
