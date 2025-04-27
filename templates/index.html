@@ -38,7 +38,7 @@
                 <th>
                     <svg xmlns="http://www.w3.org/2000/svg" width="35px" height="35px" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path fill="#007FFF" d="M64 480H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H288c-10.1 0-19.6-4.7-25.6-12.8L243.2 57.6C231.1 41.5 212.1 32 192 32H64C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64z"/></svg>
                 </th>
-                <th class="url"><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}">{{ i[1] }}</a></th>
+                <th class="url"><a href="{{ url_for('index', subpath=subpath + '/' + i[1]) }}" folder>{{ i[1] }}</a></th>
                 <th>{{i[2]}}</th>
                 <th>{{i[3]}}</th>
             </tr>
@@ -91,34 +91,36 @@
                 location.reload();
             }
 
-
             document.addEventListener("DOMContentLoaded", () => {
-              document.querySelectorAll(".clickable").forEach(row => {
-                row.addEventListener("click", (e) => {
-                  if (!e.target.closest("a")) {
-                    const anchor = row.querySelector("a");
-                    if (anchor) {
-                      anchor.click();
-                    }
-                  }
-                });
-              });
-            });
-
-            document.addEventListener("DOMContentLoaded", () => {
-            const contextMenu = document.getElementById("contextMenu");
-
-            document.querySelectorAll(".clickable").forEach(row => {
-                row.addEventListener("contextmenu", (event) => {
-                event.preventDefault();
-
-                contextMenu.style.left = `${event.pageX}px`;
-                contextMenu.style.top = `${event.pageY}px`;
-                contextMenu.style.display = "block";
-
-                contextMenu.rowElement = row;
+                document.querySelectorAll(".clickable").forEach(row => {
+                    row.addEventListener("click", (e) => {
+                        if (!e.target.closest("a")) {
+                            const anchor = row.querySelector("a");
+                            if (anchor) {
+                                const isFolder = anchor.hasAttribute('folder'); 
+                                if (!isFolder) {
+                                    anchor.click();
+                                }
+                            }
+                        }
+                    });
                 });
             });
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const contextMenu = document.getElementById("contextMenu");
+        
+                document.querySelectorAll(".clickable").forEach(row => {
+                    row.addEventListener("contextmenu", (event) => {
+                        event.preventDefault();
+        
+                        contextMenu.style.left = `${event.pageX}px`;
+                        contextMenu.style.top = `${event.pageY}px`;
+                        contextMenu.style.display = "block";
+        
+                        contextMenu.rowElement = row;
+                    });
+                });
 
             document.addEventListener("click", () => {
                 contextMenu.style.display = "none";
@@ -127,12 +129,22 @@
             document.getElementById("download").addEventListener("click", () => {
                 const row = contextMenu.rowElement;
                 if (row instanceof HTMLElement) {
-                const anchor = row.querySelector("a");
-                if (anchor) {
-                    anchor.click();
-                }
+                    const anchor = row.querySelector("a");
+                    if (anchor) {
+                        const isFolder = anchor.hasAttribute('folder');
+                        if (isFolder) {
+                            // If folder, download as zip
+                            const folderPath = anchor.getAttribute('href');
+                            window.location.href = `/download_folder?path=${encodeURIComponent(folderPath)}`;
+                        } else {
+                            // If file, download directly
+                            anchor.setAttribute('download', '');
+                            anchor.click();
+                            anchor.removeAttribute('download');
+                        }
+                    }
                 } else {
-                console.error("Row is not a valid element.");
+                    console.error("Row is not a valid element.");
                 }
                 contextMenu.style.display = "none";
             });
@@ -154,6 +166,6 @@
                 contextMenu.style.display = "none";
             });
             });
-          </script>
+        </script>
 </body>
 </html>
