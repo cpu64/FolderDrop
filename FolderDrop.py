@@ -19,7 +19,7 @@ class FolderDrop():
 
     def __init__(self, args):
         self.args = args
-        signal.signal(signal.SIGINT, self.interrupt_handler)
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.run()
 
     def run(self):
@@ -91,10 +91,6 @@ class FolderDrop():
             except Exception as e:
                 print(f"Error: {repr(e)}")
         cherrypy.engine.stop()
-
-    def interrupt_handler(self, signum, frame):
-        self.close()
-        exit(0)
 
 
 if __name__ == "__main__":
