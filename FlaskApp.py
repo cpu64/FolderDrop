@@ -20,7 +20,7 @@ class FlaskApp:
     def log(self, message):
         if not message:
             return
-        
+
         user_id = session.get('user_id', 'Unknown User')
 
         if self.logger:
