@@ -81,7 +81,7 @@ class FlaskApp:
         if request.method == 'GET':
             return self.respond(subpath)
         elif request.method == 'POST':
-            if 'file' in request.files:
+            if 'file' in request.files and self.config['upload']:
                 file = request.files['file']
                 if file.filename != '':
                     file.save(os.path.join(os.path.join(self.config['directory'], subpath), file.filename))
