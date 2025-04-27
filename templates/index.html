@@ -56,6 +56,42 @@
         </div>
 
         <script>
+            const dropArea = document.documentElement
+
+            dropArea.ondragover = (e) => {
+                e.preventDefault();
+            }
+
+            dropArea.ondragleave = (e) => {
+                e.preventDefault();
+            }
+
+            dropArea.ondrop = (e) => {
+                e.preventDefault();
+                if(e.dataTransfer.items){
+                    [...e.dataTransfer.items].forEach((item) => {
+                        if(item.kind === 'file'){
+                            const file = item.getAsFile();
+                                uploadFile(file)
+                        }
+                    })
+                }else{
+                    [...e.dataTransfer.files].forEach((file) => {
+                            uploadFile(file)
+                    })
+                }
+            }
+
+            function uploadFile(file){
+                var http = new XMLHttpRequest()
+                var data = new FormData()
+                data.append('file', file)
+                http.open('POST', '', false)
+                http.send(data)
+                location.reload();
+            }
+
+
             document.addEventListener("DOMContentLoaded", () => {
               document.querySelectorAll(".clickable").forEach(row => {
                 row.addEventListener("click", (e) => {

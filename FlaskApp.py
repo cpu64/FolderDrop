@@ -81,6 +81,12 @@ class FlaskApp:
         if request.method == 'GET':
             return self.respond(subpath)
         elif request.method == 'POST':
+            if 'file' in request.files:
+                file = request.files['file']
+                if file.filename != '':
+                    file.save(os.path.join(os.path.join(self.config['directory'], subpath), file.filename))
+                    return self.respond(subpath)
+
             if request.form["Sort"] == 'Name':
                 session['Sort'] = session['Sort']%2 + Sort.NAME_ASCENDING
             elif request.form["Sort"] == 'Size':
