@@ -1,3 +1,5 @@
+import shutil
+import tempfile
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
 from Utils import get_contents, Sort
 import os, uuid
@@ -39,6 +41,7 @@ class FlaskApp:
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
         self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
+        self.app.add_url_rule('/download_folder', 'download_folder', self.download_folder)
 
     # Route to serve the favicon
     def favicon(self):
@@ -96,3 +99,20 @@ class FlaskApp:
             return self.respond(subpath)
         abort(404)
 
+    def download_folder(self):
+        folder_path = request.args.get('path')
+        folder_path = os.path.join(self.config['directory'], folder_path.lstrip('/'))
+
+        if not os.path.isdir(folder_path):
+            self.log(f"Invalid folder path: {folder_path}")
+            return abort(404)
+
+        # Create a temporary zip file from the folder
+        tmp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        zip_filename = tmp_zip.name
+
+        # Create the zip archive
+        shutil.make_archive(zip_filename.replace('.zip', ''), 'zip', folder_path)
+
+        # Serve the zip file for download
+        return send_from_directory(os.path.dirname(zip_filename), os.path.basename(zip_filename), as_attachment=True)
