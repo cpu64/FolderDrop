@@ -14,6 +14,35 @@ class Sort(IntEnum):
     DATE_ASCENDING = 5
     DATE_DESCENDING = 6
 
+def to_bytes(size: int, unit: str) -> int:
+    """Convert a size in human-readable format to bytes."""
+    units = {
+        "B": 1,
+        "KiB": 1024,
+        "MiB": 1024**2,
+        "GiB": 1024**3,
+        "TiB": 1024**4,
+        "PiB": 1024**5,
+        "EiB": 1024**6,
+        "ZiB": 1024**7,
+    }
+    return size * units[unit]
+
+def from_bytes(size: int, unit: str) -> int:
+    """Convert a size in bytes to a human-readable format."""
+    units = {
+        "B": 1,
+        "KiB": 1024,
+        "MiB": 1024**2,
+        "GiB": 1024**3,
+        "TiB": 1024**4,
+        "PiB": 1024**5,
+        "EiB": 1024**6,
+        "ZiB": 1024**7,
+    }
+    return size / units[unit]
+
+
 def size_human_readable(size):
     for unit in ("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"):
         if abs(size) < 1024.0:
