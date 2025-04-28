@@ -161,7 +161,11 @@
             document.getElementById("delete").addEventListener("click", () => {
                 const row = contextMenu.rowElement;
                 if (confirm("Are you sure you want to delete this item?")) {
-                row.remove();
+                    const anchor = row.querySelector("a");
+                    if (anchor) {
+                        const itemPath = anchor.getAttribute('href');
+                        window.location.href = `/delete?path=${encodeURIComponent(itemPath)}`;
+                    }
                 }
                 contextMenu.style.display = "none";
             });

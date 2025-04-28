@@ -1,3 +1,4 @@
+import urllib.parse
 import shutil
 import tempfile
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
@@ -42,6 +43,7 @@ class FlaskApp:
         self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/download_folder', 'download_folder', self.download_folder)
+        self.app.add_url_rule('/delete', 'delete', self.delete)
 
     # Route to serve the favicon
     def favicon(self):
@@ -99,6 +101,10 @@ class FlaskApp:
             return self.respond(subpath)
         abort(404)
 
+    # Route to download a folder as a zip file
+    # folder_path: The path to the folder to download
+    # Returns a zip file for download
+    # If the folder path is invalid, it will return a 404 error
     def download_folder(self):
         folder_path = request.args.get('path')
         folder_path = os.path.join(self.config['directory'], folder_path.lstrip('/'))
@@ -116,3 +122,40 @@ class FlaskApp:
 
         # Serve the zip file for download
         return send_from_directory(os.path.dirname(zip_filename), os.path.basename(zip_filename), as_attachment=True)
+
+    # Route to delete a file or folder
+    # path: The path to the file or folder to delete
+    # If the path is invalid, it will return a 404 error
+    # If the deletion is successful, it will redirect to the parent directory
+    # If the deletion is not allowed, it will return the parent path index page
+    def delete(self):
+        # TODO: Remove delete button from user interface if deleting is not allowed
+        if self.config['deleting'] == True:
+            path = request.args.get('path')
+            if not path:
+                self.log("Deletion failed. No path provided.")
+                return redirect(url_for('index'))
+
+            # Decode the URL-encoded path
+            path = urllib.parse.unquote(path)
+            path = os.path.join(self.config['directory'], path.lstrip('/'))
+
+            if os.path.exists(path):
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                else:
+                    os.remove(path)
+                self.log(f"Deleted: {path}")
+            else:
+                self.log(f"Deletion failed. Path not found: {path}")
+        else:
+            self.log("Deletion failed. Deleting files and folders is not allowed.")
+
+        # Redirect to the parent directory
+        parent_path = os.path.dirname(path)
+        if parent_path != self.config['directory']:
+            subpath = os.path.relpath(parent_path, self.config['directory'])
+            return redirect(url_for('index', subpath=subpath))
+        else:
+            # If the parent path is the root directory, redirect to the index page
+            return redirect(url_for('index'))
