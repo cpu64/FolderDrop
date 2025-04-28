@@ -98,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--directory',  default='./share', help='Directory to share. Default: "./share"')
     parser.add_argument('-p', '--password',  default='', help='Password.  Default: ""')
     parser.add_argument('-P', '--port',  default=50505, help='Port to serve FolderDrop on.  Default: "50505"')
+    parser.add_argument('-s', '--max_size',  default=10737418240, help='Max size of the directory.  Default: "10GiB"')
     parser.add_argument('--gui', default=True, action=argparse.BooleanOptionalAction, help='GUI for the host. Default: "Yes"')
     parser.add_argument('--downloading', default=True, action=argparse.BooleanOptionalAction, help='Allow downloading files. Default: "Yes"')
     parser.add_argument('--uploading', default=True, action=argparse.BooleanOptionalAction, help='Allow uploading files. Default: "Yes"')
