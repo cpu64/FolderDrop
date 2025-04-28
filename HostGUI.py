@@ -1,9 +1,10 @@
 #pip install PyQt6
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout, QSystemTrayIcon, QMenu, QCheckBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QTextEdit, QWidget, QGridLayout, QSystemTrayIcon, QMenu, QCheckBox, QComboBox
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import Qt, QCoreApplication
 import signal
+import Utils
 
 
 class SetupWindow(QWidget):
@@ -29,6 +30,25 @@ class SetupWindow(QWidget):
         self.directory_button.clicked.connect(self.select_directory)
         directory_grid.addWidget(self.directory_button, 1, 1)
         top_layout.addLayout(directory_grid)
+
+        self.max_size_grid = QGridLayout()
+        self.max_size_grid.addWidget(QLabel("Current size:"), 0, 0)
+        self.current_size_text = QLabel()
+        self.max_size_grid.addWidget(self.current_size_text, 0, 1)
+        self.max_size_grid.addWidget(QLabel("Max size:"), 1, 0)
+        self.max_size_text = QLineEdit()
+        self.max_size_text.setText(str(Utils.from_bytes(self.config.max_size, "GiB")))
+        self.max_size_grid.addWidget(self.max_size_text, 1, 1)
+        self.format_dropdown = QComboBox()
+        self.format_dropdown.addItems(["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB"])
+        self.format_dropdown.setCurrentIndex(3)  # Default to GiB
+        self.max_size_grid.addWidget(self.format_dropdown, 1, 2)
+        top_layout.addLayout(self.max_size_grid)
+
+        for i in range(self.max_size_grid.count()):
+            widget = self.max_size_grid.itemAt(i).widget()
+            if widget:
+                widget.setVisible(False)
 
 # Password input
         self.check_password = QCheckBox("Require password")
@@ -96,6 +116,13 @@ class SetupWindow(QWidget):
 
     def select_directory(self):
         self.directory_text.setText(QFileDialog.getExistingDirectory(self, 'Select Folder'))
+        enabled = self.directory_text.text() != ""
+        for i in range(self.max_size_grid.count()):
+            widget = self.max_size_grid.itemAt(i).widget()
+            if widget:
+                widget.setVisible(enabled)
+        if enabled:
+            self.current_size_text.setText(f"{Utils.size_human_readable(Utils.size_of_dir(self.directory_text.text()))}")
 
     def closeEvent(self, event):
         QCoreApplication.exit(1)
@@ -107,6 +134,7 @@ class SetupWindow(QWidget):
         self.config.uploading = self.check_uploading.isChecked()
         self.config.renaming = self.check_renaming.isChecked()
         self.config.deleting = self.check_deleting.isChecked()
+        self.config.max_size = Utils.to_bytes(self.max_size_text.text(), self.format_dropdown.currentText())
         QCoreApplication.exit(0)
 
 
