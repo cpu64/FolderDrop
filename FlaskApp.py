@@ -2,7 +2,7 @@ import urllib.parse
 import shutil
 import tempfile
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
-from Utils import get_contents, Sort
+from Utils import get_contents, Sort, size_of_dir, size_human_readable, num_of_items
 import os, uuid
 
 class FlaskApp:
@@ -72,7 +72,11 @@ class FlaskApp:
         parent_subpath = '/'.join(subpath.split('/')[:-1]) if subpath else '' # Compute parent directory path
 
         if os.path.isdir(full_path):
-            return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath)
+            dir_size= size_of_dir(full_path)
+            items = num_of_items(full_path)
+            readable = size_human_readable(dir_size)
+            #max_size_human = size_human_readable(self.max_size)
+            return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items)
         elif os.path.isfile(full_path):
             return send_from_directory(self.config['directory'], subpath, as_attachment=True)
 

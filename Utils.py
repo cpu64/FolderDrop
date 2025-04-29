@@ -57,6 +57,12 @@ def size_of_dir(path: str):
             size += os.path.getsize(os.path.join(path, f))
     return size
 
+def num_of_items(path: str):
+    try:
+        return len(os.listdir(path))
+    except OSError:
+        return 0 
+
 # Get the contents of a directory
 # Returns a list of tuples with the following format:
 # (type, name, size, modified time)
