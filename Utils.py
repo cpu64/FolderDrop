@@ -14,7 +14,7 @@ class Sort(IntEnum):
     DATE_ASCENDING = 5
     DATE_DESCENDING = 6
 
-def to_bytes(size: int, unit: str) -> int:
+def to_bytes(size: float, unit: str) -> float:
     """Convert a size in human-readable format to bytes."""
     units = {
         "B": 1,
@@ -28,7 +28,7 @@ def to_bytes(size: int, unit: str) -> int:
     }
     return size * units[unit]
 
-def from_bytes(size: int, unit: str) -> int:
+def from_bytes(size: float, unit: str) -> float:
     """Convert a size in bytes to a human-readable format."""
     units = {
         "B": 1,
