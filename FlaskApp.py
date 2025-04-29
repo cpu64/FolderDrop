@@ -1,7 +1,7 @@
 import urllib.parse
 import shutil
 import tempfile
-from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort
+from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort, flash
 from Utils import get_contents, Sort, size_of_dir, size_human_readable, num_of_items
 import os, uuid
 
@@ -18,6 +18,15 @@ class FlaskApp:
         self.login_token = os.urandom(100)
         self.config = config
         self.setup_routes()
+
+    def send_notification(self, message, category='info'):
+        """
+        Sends a notification to the frontend.
+        :param message: The notification message to display.
+        :param category: The category of the message (e.g., 'info', 'success', 'error').
+        """
+        flash(message, category)
+        self.log(f"Notification sent: {message}")
 
     # Method to log messages to the host object or print them to the console
     def log(self, message):
@@ -79,6 +88,10 @@ class FlaskApp:
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items)
         elif os.path.isfile(full_path):
             return send_from_directory(self.config['directory'], subpath, as_attachment=True)
+        else:
+            # Handle invalid paths
+            self.log(f"Invalid path requested: {full_path}")
+            return redirect(url_for('index'))
 
     # Route to serve the shared directory
     def index(self, subpath=''):
@@ -134,8 +147,8 @@ class FlaskApp:
     # If the deletion is not allowed, it will return the parent path index page
     def delete(self):
         # TODO: Remove delete button from user interface if deleting is not allowed
+        path = request.args.get('path')
         if self.config['deleting'] == True:
-            path = request.args.get('path')
             if not path:
                 self.log("Deletion failed. No path provided.")
                 return redirect(url_for('index'))
@@ -149,11 +162,14 @@ class FlaskApp:
                     shutil.rmtree(path)
                 else:
                     os.remove(path)
-                self.log(f"Deleted: {path}")
+                #self.log(f"Deleted: {path}")
+                self.send_notification(f"Deleted: {path}", 'success')
             else:
-                self.log(f"Deletion failed. Path not found: {path}")
+                #self.log(f"Deletion failed. Path not found: {path}")
+                self.send_notification(f"Deletion failed. Path not found: {path}", 'error')
         else:
-            self.log("Deletion failed. Deleting files and folders is not allowed.")
+            #self.log("Deletion failed. Deleting files and folders is not allowed.")
+            self.send_notification("Deletion failed. Deleting files and folders is not allowed.", 'error')
 
         # Redirect to the parent directory
         parent_path = os.path.dirname(path)

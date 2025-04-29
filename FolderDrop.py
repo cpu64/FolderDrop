@@ -11,7 +11,6 @@ from Encryption import create_self_signed_cert
 from Utils import get_gateway, get_local_ip, get_public_ip, open_port
 
 
-# TODO: in gui mode quit evrything when ^C is pressed
 class FolderDrop():
     gateway = None
     app = None
