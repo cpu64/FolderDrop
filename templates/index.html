@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='FolderDrop-icon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='index_style.css') }}">
 </head>
-<body>
+<body style="background-color: #121212;">
     <h1>Directory Contents</h1>
     <form method="POST">
         <table>
@@ -114,7 +114,7 @@
                         if (!e.target.closest("a")) {
                             const anchor = row.querySelector("a");
                             if (anchor) {
-                                const isFolder = anchor.hasAttribute('folder'); 
+                                const isFolder = anchor.hasAttribute('folder');
                                 if (!isFolder) {
                                     anchor.click();
                                 }
@@ -126,15 +126,15 @@
 
             document.addEventListener("DOMContentLoaded", () => {
                 const contextMenu = document.getElementById("contextMenu");
-        
+
                 document.querySelectorAll(".clickable").forEach(row => {
                     row.addEventListener("contextmenu", (event) => {
                         event.preventDefault();
-        
+
                         contextMenu.style.left = `${event.pageX}px`;
                         contextMenu.style.top = `${event.pageY}px`;
                         contextMenu.style.display = "block";
-        
+
                         contextMenu.rowElement = row;
                     });
                 });
@@ -192,7 +192,7 @@
                 const parentLink = document.querySelector(".parent_folder a");
 
                 if (!parentLink) return;
-            
+
                 if (event.altKey && event.key === "ArrowUp") {
                     event.preventDefault();
                     parentLink.click();
