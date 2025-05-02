@@ -4,6 +4,7 @@ import tempfile
 from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort, flash
 from Utils import get_contents, Sort, size_of_dir, size_human_readable, num_of_items
 import os, uuid
+import time
 
 class FlaskApp:
     # Class to share a directory over the internet
@@ -61,6 +62,7 @@ class FlaskApp:
     # Route to login to the shared directory
     def login(self):
         if request.method == 'POST':
+            time.sleep(1)
             if self.config['password'].encode('utf-8') == request.form["password"].encode('utf-8'):
                 self.log("Correct password entered.")
                 session['logged_in'] = self.login_token
@@ -93,6 +95,7 @@ class FlaskApp:
             self.log(f"Invalid path requested: {full_path}")
             return redirect(url_for('index'))
 
+    # TODO: route http to https
     # Route to serve the shared directory
     def index(self, subpath=''):
         if self.config["password"] and session.get('logged_in') != self.login_token:
