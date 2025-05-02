@@ -97,6 +97,7 @@
                             uploadFile(file)
                     })
                 }
+                location.reload();
             }
 
             function uploadFile(file){
@@ -105,7 +106,6 @@
                 data.append('file', file)
                 http.open('POST', '', false)
                 http.send(data)
-                location.reload();
             }
 
             document.addEventListener("DOMContentLoaded", () => {
