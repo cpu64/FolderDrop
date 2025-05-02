@@ -57,6 +57,11 @@ class FolderDrop():
             'server.ssl_private_key': key_file
         })
 
+        print(f"\x1B[38;5;26;4mhttps://localhost:{args.port}\x1b[0m \x1B[38;5;11mOnly works on your computer. This link can only be accessed from the device where the service is running.\x1b[0m")
+        print(f"\x1B[38;5;26;4mhttps://{ips[1]}:{args.port}\x1b[0m \x1B[38;5;11mWorks on your computer and devices connected to your home network. You can share this link with others in your house.\x1b[0m")
+        if len(ips) > 2:
+            print(f"\x1B[38;5;26;4mhttps://{ips[2]}:{args.port}\x1b[0m \x1B[38;5;11mWorks outside your home, but not inside your home network. Share this link with people on the internet, but note that it won’t work from inside your home due to router limitations.\x1b[0m")
+
         if self.args.gui:
             window = MainWindow(ips, args.port)
             window.show()
