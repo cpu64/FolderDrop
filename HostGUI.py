@@ -159,7 +159,7 @@ class MainWindow(QMainWindow):
         left_panel.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         link_grid = QGridLayout()
-
+        # TODO: explain links
         # example: <a href='http://localhost:5000'>http://localhost:5000</a>
         self.link_localhost = QLabel(f"<a href='https://localhost:{port}'>https://localhost:{port}</a>")
         self.link_localhost.setTextFormat(Qt.TextFormat.RichText)
