@@ -70,6 +70,10 @@ class SetupWindow(QWidget):
 # Checkboxes
         top_layout.addWidget(QLabel("Permissions:"))
 
+        self.check_public = QCheckBox("Allow sharing files over the internet")
+        self.check_public.setChecked(self.config.public)
+        top_layout.addWidget(self.check_public)
+
         self.check_downloading = QCheckBox("Allow downloading files")
         self.check_downloading.setChecked(self.config.downloading)
         top_layout.addWidget(self.check_downloading)
@@ -130,6 +134,7 @@ class SetupWindow(QWidget):
     def close_and_return(self):
         self.config.directory = self.directory_text.text().strip() or self.config.directory
         self.config.password = self.password_text.text() if self.check_password.isChecked() else ""
+        self.config.public = self.check_public.isChecked()
         self.config.downloading = self.check_downloading.isChecked()
         self.config.uploading = self.check_uploading.isChecked()
         self.config.renaming = self.check_renaming.isChecked()
