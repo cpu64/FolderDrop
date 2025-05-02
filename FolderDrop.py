@@ -33,7 +33,7 @@ class FolderDrop():
             raise NotADirectoryError(f"directory: '{args.directory}' doesn't exist")
 
         local_ip = get_local_ip("8.8.8.8" or curio.run(get_gateway()))
-        public_ip = curio.run(get_public_ip())
+        public_ip = curio.run(get_public_ip()) if args.public else None
         ips = ["127.0.0.1", local_ip, public_ip] if public_ip else ["127.0.0.1", local_ip]
 
         if public_ip:
@@ -102,8 +102,9 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--directory',  default='./share', help='Directory to share. Default: "./share"')
     parser.add_argument('-p', '--password',  default='', help='Password.  Default: ""')
     parser.add_argument('-P', '--port',  default=50505, help='Port to serve FolderDrop on.  Default: "50505"')
-    parser.add_argument('-s', '--max_size',  default=10737418240, help='Max size of the directory.  Default: "10GiB"')
+    parser.add_argument('-s', '--max-size',  default=10737418240, help='Max size of the directory.  Default: "10GiB"')
     parser.add_argument('--gui', default=True, action=argparse.BooleanOptionalAction, help='GUI for the host. Default: "Yes"')
+    parser.add_argument('--public',  default=True, action=argparse.BooleanOptionalAction, help='Allow sharing files over the internet. Default: "Yes"')
     parser.add_argument('--downloading', default=True, action=argparse.BooleanOptionalAction, help='Allow downloading files. Default: "Yes"')
     parser.add_argument('--uploading', default=True, action=argparse.BooleanOptionalAction, help='Allow uploading files. Default: "Yes"')
     parser.add_argument('--renaming', default=False, action=argparse.BooleanOptionalAction, help='Allow renaming files. Default: "No"')
