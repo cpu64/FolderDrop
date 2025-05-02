@@ -85,7 +85,6 @@ class FlaskApp:
             items = num_of_items(full_path)
             readable = size_human_readable(dir_size)
             max_size_human = size_human_readable(int(self.config['max_size']))
-            print(self.config['max_size'])
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human)
         elif os.path.isfile(full_path):
             return send_from_directory(self.config['directory'], subpath, as_attachment=True)
