@@ -10,7 +10,7 @@
 <body style="background-color: #121212;">
     <h1>Directory Contents</h1>
     <form method="POST">
-        <table>
+        <table subpath="{{ subpath }}">
             <colgroup>
                 <col style="width: 10%;">
                 <col class="url" style="width: 30%;">
@@ -54,9 +54,10 @@
 
         <div id="contextMenu" class="context-menu">
             <ul>
-              <li id="download">Download</li>
-              <li id="rename">Rename</li>
-              <li id="delete">Delete</li>
+                <li id="newFolder">Create new folder</li>
+                <li id="download">Download</li>
+                <li id="rename">Rename</li>
+                <li id="delete">Delete</li>
             </ul>
         </div>
 
@@ -143,6 +144,17 @@
                 contextMenu.style.display = "none";
             });
 
+            document.getElementById("newFolder").addEventListener("click", () => {
+                const folderName = prompt("Enter new folder name:");
+                if (folderName) {
+                    const currentPath = document.querySelector("table").getAttribute("subpath");
+                    console.log(currentPath);
+                    // Redirect to the create folder route with the new folder name and current path
+                    window.location.href = `/create_folder?path=${encodeURIComponent(currentPath + '/' + folderName)}`;
+                }
+                contextMenu.style.display = "none";
+            });
+
             document.getElementById("download").addEventListener("click", () => {
                 const row = contextMenu.rowElement;
                 if (row instanceof HTMLElement) {
@@ -168,9 +180,14 @@
 
             document.getElementById("rename").addEventListener("click", () => {
                 const row = contextMenu.rowElement;
-                const newName = prompt("Enter new name for " + row.cells[1].textContent);
-                if (newName) {
-                row.cells[1].textContent = newName;
+                const anchor = row.querySelector("a");
+                if (anchor) {
+                    const currentName = anchor.textContent;
+                    const newName = prompt("Enter new name:", currentName);
+                    if (newName && newName !== currentName) {
+                        const itemPath = anchor.getAttribute('href');
+                        window.location.href = `/rename?path=${encodeURIComponent(itemPath)}&new_name=${encodeURIComponent(newName)}`;
+                    }
                 }
                 contextMenu.style.display = "none";
             });
