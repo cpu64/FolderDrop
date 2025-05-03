@@ -27,7 +27,7 @@ class FlaskApp:
         :param category: The category of the message (e.g., 'info', 'success', 'error').
         """
         flash(message, category)
-        self.log(f"Notification sent: {message}")
+        #self.log(f"Notification sent: {message}")
 
     # Method to log messages to the host object or print them to the console
     def log(self, message):
@@ -54,6 +54,8 @@ class FlaskApp:
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/download_folder', 'download_folder', self.download_folder)
         self.app.add_url_rule('/delete', 'delete', self.delete)
+        self.app.add_url_rule('/create_folder', 'create_folder', self.create_folder)
+        self.app.add_url_rule('/rename', 'rename', self.rename)
 
     # Route to serve the favicon
     def favicon(self):
@@ -165,20 +167,91 @@ class FlaskApp:
                     shutil.rmtree(path)
                 else:
                     os.remove(path)
-                #self.log(f"Deleted: {path}")
+                self.log(f"Deleted: {path}")
                 self.send_notification(f"Deleted: {path}", 'success')
             else:
-                #self.log(f"Deletion failed. Path not found: {path}")
+                self.log(f"Deletion failed. Path not found: {path}")
                 self.send_notification(f"Deletion failed. Path not found: {path}", 'error')
         else:
-            #self.log("Deletion failed. Deleting files and folders is not allowed.")
+            self.log("Deletion failed. Deleting files and folders is not allowed.")
             self.send_notification("Deletion failed. Deleting files and folders is not allowed.", 'error')
 
         # Redirect to the parent directory
         parent_path = os.path.dirname(path)
         if parent_path != self.config['directory']:
-            subpath = os.path.relpath(parent_path, self.config['directory'])
-            return redirect(url_for('index', subpath=subpath))
+            return self.respond(parent_path)
+        else:
+            # If the parent path is the root directory, redirect to the index page
+            return redirect(url_for('index'))
+        
+    # Route to create new folder
+    # folder_path: The path with a name of the new folder to create
+    # Returns a 404 error if the folder already exists
+    # If the folder name is invalid,  returns a 404 error
+    def create_folder(self):
+        folder_path = request.args.get('path')
+        parent_path = os.path.dirname(folder_path)
+        if not folder_path:
+            self.log("Folder creation failed. No path provided.")
+            return redirect(url_for('index'))
+
+        # Decode the URL-encoded path
+        folder_path = urllib.parse.unquote(folder_path)
+        folder_path = os.path.join(self.config['directory'], folder_path.lstrip('/'))
+
+        if os.path.exists(folder_path):
+            self.log(f"Folder creation failed. Path already exists: {folder_path}")
+            self.send_notification(f"Folder creation failed. Path already exists: {folder_path}", 'error')
+            return self.respond(parent_path)
+
+        try:
+            os.makedirs(folder_path)
+            self.log(f"Created folder: {folder_path}")
+            self.send_notification(f"Created folder: {folder_path}", 'success')
+        except Exception as e:
+            self.log(f"Folder creation failed: {e}")
+            self.send_notification(f"Folder creation failed: {e}", 'error')
+
+        # Redirect to the parent directory
+        if parent_path != self.config['directory']:
+            return self.respond(parent_path)
+        else:
+            # If the parent path is the root directory, redirect to the index page
+            return redirect(url_for('index'))
+        
+    def rename(self):
+        original_path = request.args.get('path')
+        new_name = request.args.get('new_name')
+        if not original_path:
+            self.log("Renaming failed. No path provided.")
+            return self.respond("")
+        if not new_name:
+            self.log("Renaming failed. No new name provided.")
+            return self.respond(original_path)
+        
+        # Decode the URL-encoded path
+        original_path = urllib.parse.unquote(original_path)
+        original_path = os.path.join(self.config['directory'], original_path.lstrip('/'))
+        new_name = urllib.parse.unquote(new_name)
+        new_path = os.path.join(os.path.dirname(original_path), new_name)
+
+        try:
+            if os.path.exists(new_path):
+                self.log(f"Renaming failed. Path already exists: {new_path}")
+                self.send_notification(f"Renaming failed. Path already exists: {new_path}", 'error')
+                return self.respond(os.path.dirname(original_path))
+
+            os.rename(original_path, new_path)
+            self.log(f"Renamed: {original_path} to {new_name}")
+            self.send_notification(f"Renamed: {original_path} to {new_name}", 'success')
+        except Exception as e:
+            self.log(f"Renaming failed: {e}")
+            self.send_notification(f"Renaming failed: {e}", 'error')
+
+        # Redirect to the parent directory
+        parent_path = os.path.dirname(new_path)
+        if parent_path != self.config['directory']:
+            return self.respond(parent_path)
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
