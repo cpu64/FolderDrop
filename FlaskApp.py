@@ -263,39 +263,39 @@ class FlaskApp:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
         
-    def rename(self):
-        original_path = request.args.get('path')
-        new_name = request.args.get('new_name')
-        if not original_path:
-            self.log("Renaming failed. No path provided.")
-            return self.respond("")
-        if not new_name:
-            self.log("Renaming failed. No new name provided.")
-            return self.respond(original_path)
+    # def rename(self):
+    #     original_path = request.args.get('path')
+    #     new_name = request.args.get('new_name')
+    #     if not original_path:
+    #         self.log("Renaming failed. No path provided.")
+    #         return self.respond("")
+    #     if not new_name:
+    #         self.log("Renaming failed. No new name provided.")
+    #         return self.respond(original_path)
         
-        # Decode the URL-encoded path
-        original_path = urllib.parse.unquote(original_path)
-        original_path = os.path.join(self.config['directory'], original_path.lstrip('/'))
-        new_name = urllib.parse.unquote(new_name)
-        new_path = os.path.join(os.path.dirname(original_path), new_name)
+    #     # Decode the URL-encoded path
+    #     original_path = urllib.parse.unquote(original_path)
+    #     original_path = os.path.join(self.config['directory'], original_path.lstrip('/'))
+    #     new_name = urllib.parse.unquote(new_name)
+    #     new_path = os.path.join(os.path.dirname(original_path), new_name)
 
-        try:
-            if os.path.exists(new_path):
-                self.log(f"Renaming failed. Path already exists: {new_path}")
-                self.send_notification(f"Renaming failed. Path already exists: {new_path}", 'error')
-                return self.respond(os.path.dirname(original_path))
+    #     try:
+    #         if os.path.exists(new_path):
+    #             self.log(f"Renaming failed. Path already exists: {new_path}")
+    #             self.send_notification(f"Renaming failed. Path already exists: {new_path}", 'error')
+    #             return self.respond(os.path.dirname(original_path))
 
-            os.rename(original_path, new_path)
-            self.log(f"Renamed: {original_path} to {new_name}")
-            self.send_notification(f"Renamed: {original_path} to {new_name}", 'success')
-        except Exception as e:
-            self.log(f"Renaming failed: {e}")
-            self.send_notification(f"Renaming failed: {e}", 'error')
+    #         os.rename(original_path, new_path)
+    #         self.log(f"Renamed: {original_path} to {new_name}")
+    #         self.send_notification(f"Renamed: {original_path} to {new_name}", 'success')
+    #     except Exception as e:
+    #         self.log(f"Renaming failed: {e}")
+    #         self.send_notification(f"Renaming failed: {e}", 'error')
 
-        # Redirect to the parent directory
-        parent_path = os.path.dirname(new_path)
-        if parent_path != self.config['directory']:
-            return self.respond(parent_path)
-        else:
-            # If the parent path is the root directory, redirect to the index page
-            return redirect(url_for('index'))
+    #     # Redirect to the parent directory
+    #     parent_path = os.path.dirname(new_path)
+    #     if parent_path != self.config['directory']:
+    #         return self.respond(parent_path)
+    #     else:
+    #         # If the parent path is the root directory, redirect to the index page
+    #         return redirect(url_for('index'))
