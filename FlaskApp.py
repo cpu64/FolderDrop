@@ -54,7 +54,9 @@ class FlaskApp:
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/download_folder', 'download_folder', self.download_folder)
         self.app.add_url_rule('/delete', 'delete', self.delete)
+
         self.app.add_url_rule('/create_folder', 'create_folder', self.create_folder)
+
         self.app.add_url_rule('/rename', 'rename', self.rename)
 
     # Route to serve the favicon
@@ -89,7 +91,13 @@ class FlaskApp:
             items = num_of_items(full_path)
             readable = size_human_readable(dir_size)
             max_size_human = size_human_readable(int(self.config['max_size']))
+
+            shared_size = self.config['shared_size']
+
+            return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human, shared_size=shared_size)
+
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human)
+
         elif os.path.isfile(full_path):
             return send_from_directory(self.config['directory'], subpath, as_attachment=True)
         else:
@@ -180,6 +188,42 @@ class FlaskApp:
         parent_path = os.path.dirname(path)
         if parent_path != self.config['directory']:
             return self.respond(parent_path)
+        else:
+            # If the parent path is the root directory, redirect to the index page
+            return redirect(url_for('index'))
+
+
+    def rename(self):
+
+        path = request.args.get('path')
+        new_path = request.args.get('new_path')
+        if not path or not new_path:
+            self.log("Renaming failed. No path provided.")
+            return redirect(url_for('index'))
+
+        # Decode the URL-encoded path
+        path = urllib.parse.unquote(path)
+        path = os.path.join(self.config['directory'], path.lstrip('/'))
+        
+        new_path = urllib.parse.unquote(new_path)
+        new_path = os.path.join(self.config['directory'], new_path.lstrip('/'))
+
+        if not os.path.isdir(path):
+            extension = path.split(".")[-1]
+            new_path = f"{new_path}.{extension}"
+            
+        print(path)
+        print(new_path)
+        if os.path.exists(path):
+            os.rename(path, new_path)
+            self.send_notification(f"Renamed: {new_path}", 'success')
+        else:
+            self.send_notification(f"Renaming failed. Path not found: {path}", 'error')
+
+        parent_path = os.path.dirname(new_path)
+        if parent_path != self.config['directory']:
+            subpath = os.path.relpath(parent_path, self.config['directory'])
+            return redirect(url_for('index', subpath=subpath))
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))

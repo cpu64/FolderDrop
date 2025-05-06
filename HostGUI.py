@@ -139,7 +139,12 @@ class SetupWindow(QWidget):
         self.config.uploading = self.check_uploading.isChecked()
         self.config.renaming = self.check_renaming.isChecked()
         self.config.deleting = self.check_deleting.isChecked()
+
+        self.config.max_size = Utils.to_bytes(int(float(self.max_size_text.text())), self.format_dropdown.currentText())
+        self.config.shared_size = f"{Utils.size_human_readable(Utils.size_of_dir(self.directory_text.text()))}"
+
         self.config.max_size = Utils.to_bytes(float(self.max_size_text.text()), self.format_dropdown.currentText())
+
         QCoreApplication.exit(0)
 
 
