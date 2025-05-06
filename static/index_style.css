@@ -159,6 +159,28 @@ ul {
     background-color: #ffc107; /* Yellow for warning */
 }
 
+.size{
+    position: fixed;
+    top: 15%;
+    left: 0;
+    width: 150px;
+    height: 75px;
+    color: white;
+    border-top-right-radius:15px;
+    border-bottom-right-radius: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(43, 43, 43, 0.57);
+    box-shadow: rgba(0, 0, 0, 0.1) 10px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-wrap: break-word;
+}
+
+.last_row th{
+    border-top: 1px solid rgba(248, 245, 245, 0.877);
+}
+
 @keyframes slide-in {
     from {
         transform: translateX(+100%);
