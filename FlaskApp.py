@@ -119,7 +119,10 @@ class FlaskApp:
             if 'file' in request.files and self.config['uploading']:
                 file = request.files['file']
                 if file.filename != '':
-                    file.save(os.path.join(os.path.join(self.config['directory'], subpath), file.filename))
+                    safe_path = os.path.normpath(file.filename).replace('\\', '/')
+                    full_path = os.path.join(self.config['directory'], subpath, safe_path)
+                    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                    file.save(full_path)
                     return self.respond(subpath)
 
             if request.form["Sort"] == 'Name':
@@ -204,14 +207,14 @@ class FlaskApp:
         # Decode the URL-encoded path
         path = urllib.parse.unquote(path)
         path = os.path.join(self.config['directory'], path.lstrip('/'))
-        
+
         new_path = urllib.parse.unquote(new_path)
         new_path = os.path.join(self.config['directory'], new_path.lstrip('/'))
 
         if not os.path.isdir(path):
             extension = path.split(".")[-1]
             new_path = f"{new_path}.{extension}"
-            
+
         print(path)
         print(new_path)
         if os.path.exists(path):
@@ -227,7 +230,7 @@ class FlaskApp:
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
-        
+
     # Route to create new folder
     # folder_path: The path with a name of the new folder to create
     # Returns a 404 error if the folder already exists
@@ -262,7 +265,7 @@ class FlaskApp:
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
-        
+
     # def rename(self):
     #     original_path = request.args.get('path')
     #     new_name = request.args.get('new_name')
@@ -272,7 +275,7 @@ class FlaskApp:
     #     if not new_name:
     #         self.log("Renaming failed. No new name provided.")
     #         return self.respond(original_path)
-        
+
     #     # Decode the URL-encoded path
     #     original_path = urllib.parse.unquote(original_path)
     #     original_path = os.path.join(self.config['directory'], original_path.lstrip('/'))
