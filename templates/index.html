@@ -86,27 +86,52 @@
                 e.preventDefault();
             }
 
-            dropArea.ondrop = (e) => {
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            dropArea.ondrop = async (e) => {
                 e.preventDefault();
-                if(e.dataTransfer.items){
-                    [...e.dataTransfer.items].forEach((item) => {
-                        if(item.kind === 'file'){
-                            const file = item.getAsFile();
-                                uploadFile(file)
+                const items = e.dataTransfer.items;
+
+                if (items) {
+                    [...items].forEach((item) => {
+                        const entry = item.webkitGetAsEntry();
+                        if (entry) {
+                            if (entry.isFile) {
+                                item.getAsFile() && uploadFile(item.getAsFile());
+                            } else if (entry.isDirectory) {
+                                traverseDirectory(entry, entry.name + "/");
+                            }
                         }
-                    })
-                }else{
-                    [...e.dataTransfer.files].forEach((file) => {
-                            uploadFile(file)
-                    })
+                    });
+                } else {
+                    [...e.dataTransfer.files].forEach(uploadFile);
                 }
+                await sleep(1000);
                 location.reload();
+            };
+
+            function traverseDirectory(entry, path = "") {
+                const reader = entry.createReader();
+                reader.readEntries((entries) => {
+                    entries.forEach((ent) => {
+                        if (ent.isFile) {
+                            ent.file((file) => {
+                                file.relativePath = path + ent.name;
+                                uploadFile(file);
+                            });
+                        } else if (ent.isDirectory) {
+                            traverseDirectory(ent, path + ent.name + "/");
+                        }
+                    });
+                });
             }
 
             function uploadFile(file){
                 var http = new XMLHttpRequest()
                 var data = new FormData()
-                data.append('file', file)
+                data.append('file', file, file.relativePath || file.name);
                 http.open('POST', '', false)
                 http.send(data)
             }
