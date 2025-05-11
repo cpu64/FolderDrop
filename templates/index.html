@@ -9,6 +9,13 @@
 </head>
 <body style="background-color: #121212;">
     <h1>Directory Contents</h1>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <form method="POST" action="" enctype="multipart/form-data">
+            <input class="btn-file" type="file" name="file" multiple id="fileInput">
+            <button type="button" class="custom-btn-file" onclick="document.getElementById('fileInput').click();">Upload File</button>
+            <button type="submit" class="custom-btn-file">Submit</button>
+        </form>
+    </div>
     <form method="POST">
         <div class="size">{{ shared_size }}/{{ max_size }} used</div>
         <table>
