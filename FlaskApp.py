@@ -54,10 +54,9 @@ class FlaskApp:
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/download_folder', 'download_folder', self.download_folder)
         self.app.add_url_rule('/delete', 'delete', self.delete)
-<<<<<<< HEAD
-=======
+
         self.app.add_url_rule('/create_folder', 'create_folder', self.create_folder)
->>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
+
         self.app.add_url_rule('/rename', 'rename', self.rename)
 
     # Route to serve the favicon
@@ -92,13 +91,13 @@ class FlaskApp:
             items = num_of_items(full_path)
             readable = size_human_readable(dir_size)
             max_size_human = size_human_readable(int(self.config['max_size']))
-<<<<<<< HEAD
+
             shared_size = self.config['shared_size']
 
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human, shared_size=shared_size)
-=======
+
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human)
->>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
+
         elif os.path.isfile(full_path):
             return send_from_directory(self.config['directory'], subpath, as_attachment=True)
         else:
@@ -192,7 +191,6 @@ class FlaskApp:
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
-<<<<<<< HEAD
 
 
     def rename(self):
@@ -229,7 +227,6 @@ class FlaskApp:
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
-=======
         
     # Route to create new folder
     # folder_path: The path with a name of the new folder to create
@@ -302,4 +299,3 @@ class FlaskApp:
         else:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
->>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
