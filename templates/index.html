@@ -10,12 +10,8 @@
 <body style="background-color: #121212;">
     <h1>Directory Contents</h1>
     <form method="POST">
-<<<<<<< HEAD
         <div class="size">{{ shared_size }}/{{ max_size }} used</div>
         <table>
-=======
-        <table subpath="{{ subpath }}">
->>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
             <colgroup>
                 <col style="width: 10%;">
                 <col class="url" style="width: 30%;">
@@ -186,22 +182,11 @@
 
             document.getElementById("rename").addEventListener("click", () => {
                 const row = contextMenu.rowElement;
-<<<<<<< HEAD
                 const newName = prompt("Enter new name for " + row.cells[1].textContent);
                 const anchor = row.querySelector("a");
                 if (anchor && newName) {
                     const itemPath = anchor.getAttribute('href');
                     window.location.href = `/rename?path=${encodeURIComponent(itemPath)}&new_path=${encodeURIComponent(itemPath.split("/").slice(0, -1).concat(newName).join("/"))}`;
-=======
-                const anchor = row.querySelector("a");
-                if (anchor) {
-                    const currentName = anchor.textContent;
-                    const newName = prompt("Enter new name:", currentName);
-                    if (newName && newName !== currentName) {
-                        const itemPath = anchor.getAttribute('href');
-                        window.location.href = `/rename?path=${encodeURIComponent(itemPath)}&new_name=${encodeURIComponent(newName)}`;
-                    }
->>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
                 }
                 contextMenu.style.display = "none";
             });
