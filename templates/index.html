@@ -7,11 +7,15 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='FolderDrop-icon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='index_style.css') }}">
 </head>
-<body>
+<body style="background-color: #121212;">
     <h1>Directory Contents</h1>
     <form method="POST">
+<<<<<<< HEAD
         <div class="size">{{ shared_size }}/{{ max_size }} used</div>
         <table>
+=======
+        <table subpath="{{ subpath }}">
+>>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
             <colgroup>
                 <col style="width: 10%;">
                 <col class="url" style="width: 30%;">
@@ -56,9 +60,10 @@
 
         <div id="contextMenu" class="context-menu">
             <ul>
-              <li id="download">Download</li>
-              <li id="rename">Rename</li>
-              <li id="delete">Delete</li>
+                <li id="newFolder">Create new folder</li>
+                <li id="download">Download</li>
+                <li id="rename">Rename</li>
+                <li id="delete">Delete</li>
             </ul>
         </div>
 
@@ -99,6 +104,7 @@
                             uploadFile(file)
                     })
                 }
+                location.reload();
             }
 
             function uploadFile(file){
@@ -107,7 +113,6 @@
                 data.append('file', file)
                 http.open('POST', '', false)
                 http.send(data)
-                location.reload();
             }
 
             document.addEventListener("DOMContentLoaded", () => {
@@ -116,7 +121,7 @@
                         if (!e.target.closest("a")) {
                             const anchor = row.querySelector("a");
                             if (anchor) {
-                                const isFolder = anchor.hasAttribute('folder'); 
+                                const isFolder = anchor.hasAttribute('folder');
                                 if (!isFolder) {
                                     anchor.click();
                                 }
@@ -128,20 +133,31 @@
 
             document.addEventListener("DOMContentLoaded", () => {
                 const contextMenu = document.getElementById("contextMenu");
-        
+
                 document.querySelectorAll(".clickable").forEach(row => {
                     row.addEventListener("contextmenu", (event) => {
                         event.preventDefault();
-        
+
                         contextMenu.style.left = `${event.pageX}px`;
                         contextMenu.style.top = `${event.pageY}px`;
                         contextMenu.style.display = "block";
-        
+
                         contextMenu.rowElement = row;
                     });
                 });
 
             document.addEventListener("click", () => {
+                contextMenu.style.display = "none";
+            });
+
+            document.getElementById("newFolder").addEventListener("click", () => {
+                const folderName = prompt("Enter new folder name:");
+                if (folderName) {
+                    const currentPath = document.querySelector("table").getAttribute("subpath");
+                    console.log(currentPath);
+                    // Redirect to the create folder route with the new folder name and current path
+                    window.location.href = `/create_folder?path=${encodeURIComponent(currentPath + '/' + folderName)}`;
+                }
                 contextMenu.style.display = "none";
             });
 
@@ -170,11 +186,22 @@
 
             document.getElementById("rename").addEventListener("click", () => {
                 const row = contextMenu.rowElement;
+<<<<<<< HEAD
                 const newName = prompt("Enter new name for " + row.cells[1].textContent);
                 const anchor = row.querySelector("a");
                 if (anchor && newName) {
                     const itemPath = anchor.getAttribute('href');
                     window.location.href = `/rename?path=${encodeURIComponent(itemPath)}&new_path=${encodeURIComponent(itemPath.split("/").slice(0, -1).concat(newName).join("/"))}`;
+=======
+                const anchor = row.querySelector("a");
+                if (anchor) {
+                    const currentName = anchor.textContent;
+                    const newName = prompt("Enter new name:", currentName);
+                    if (newName && newName !== currentName) {
+                        const itemPath = anchor.getAttribute('href');
+                        window.location.href = `/rename?path=${encodeURIComponent(itemPath)}&new_name=${encodeURIComponent(newName)}`;
+                    }
+>>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
                 }
                 contextMenu.style.display = "none";
             });
@@ -196,7 +223,7 @@
                 const parentLink = document.querySelector(".parent_folder a");
 
                 if (!parentLink) return;
-            
+
                 if (event.altKey && event.key === "ArrowUp") {
                     event.preventDefault();
                     parentLink.click();

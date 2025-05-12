@@ -33,7 +33,7 @@ class FolderDrop():
             raise NotADirectoryError(f"directory: '{args.directory}' doesn't exist")
 
         local_ip = get_local_ip("8.8.8.8" or curio.run(get_gateway()))
-        public_ip = curio.run(get_public_ip())
+        public_ip = curio.run(get_public_ip()) if args.public else None
         ips = ["127.0.0.1", local_ip, public_ip] if public_ip else ["127.0.0.1", local_ip]
 
         if public_ip:
@@ -56,6 +56,11 @@ class FolderDrop():
             'server.ssl_certificate': cert_file,
             'server.ssl_private_key': key_file
         })
+
+        print(f"\x1B[38;5;26;4mhttps://localhost:{args.port}\x1b[0m \x1B[38;5;11mOnly works on your computer. This link can only be accessed from the device where the service is running.\x1b[0m")
+        print(f"\x1B[38;5;26;4mhttps://{ips[1]}:{args.port}\x1b[0m \x1B[38;5;11mWorks on your computer and devices connected to your home network. You can share this link with others in your house.\x1b[0m")
+        if len(ips) > 2:
+            print(f"\x1B[38;5;26;4mhttps://{ips[2]}:{args.port}\x1b[0m \x1B[38;5;11mWorks outside your home, but not inside your home network. Share this link with people on the internet, but note that it won’t work from inside your home due to router limitations.\x1b[0m")
 
         if self.args.gui:
             window = MainWindow(ips, args.port)
@@ -97,8 +102,9 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--directory',  default='./share', help='Directory to share. Default: "./share"')
     parser.add_argument('-p', '--password',  default='', help='Password.  Default: ""')
     parser.add_argument('-P', '--port',  default=50505, help='Port to serve FolderDrop on.  Default: "50505"')
-    parser.add_argument('-s', '--max_size',  default=10737418240, help='Max size of the directory.  Default: "10GiB"')
+    parser.add_argument('-s', '--max-size',  default=10737418240, help='Max size of the directory.  Default: "10GiB"')
     parser.add_argument('--gui', default=True, action=argparse.BooleanOptionalAction, help='GUI for the host. Default: "Yes"')
+    parser.add_argument('--public',  default=True, action=argparse.BooleanOptionalAction, help='Allow sharing files over the internet. Default: "Yes"')
     parser.add_argument('--downloading', default=True, action=argparse.BooleanOptionalAction, help='Allow downloading files. Default: "Yes"')
     parser.add_argument('--uploading', default=True, action=argparse.BooleanOptionalAction, help='Allow uploading files. Default: "Yes"')
     parser.add_argument('--renaming', default=False, action=argparse.BooleanOptionalAction, help='Allow renaming files. Default: "No"')

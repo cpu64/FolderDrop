@@ -70,6 +70,10 @@ class SetupWindow(QWidget):
 # Checkboxes
         top_layout.addWidget(QLabel("Permissions:"))
 
+        self.check_public = QCheckBox("Allow sharing files over the internet")
+        self.check_public.setChecked(self.config.public)
+        top_layout.addWidget(self.check_public)
+
         self.check_downloading = QCheckBox("Allow downloading files")
         self.check_downloading.setChecked(self.config.downloading)
         top_layout.addWidget(self.check_downloading)
@@ -130,12 +134,17 @@ class SetupWindow(QWidget):
     def close_and_return(self):
         self.config.directory = self.directory_text.text().strip() or self.config.directory
         self.config.password = self.password_text.text() if self.check_password.isChecked() else ""
+        self.config.public = self.check_public.isChecked()
         self.config.downloading = self.check_downloading.isChecked()
         self.config.uploading = self.check_uploading.isChecked()
         self.config.renaming = self.check_renaming.isChecked()
         self.config.deleting = self.check_deleting.isChecked()
+<<<<<<< HEAD
         self.config.max_size = Utils.to_bytes(int(float(self.max_size_text.text())), self.format_dropdown.currentText())
         self.config.shared_size = f"{Utils.size_human_readable(Utils.size_of_dir(self.directory_text.text()))}"
+=======
+        self.config.max_size = Utils.to_bytes(float(self.max_size_text.text()), self.format_dropdown.currentText())
+>>>>>>> 1f481bce1f0e4e056ddadf03269b210431e4c539
         QCoreApplication.exit(0)
 
 
@@ -160,7 +169,7 @@ class MainWindow(QMainWindow):
         left_panel.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         link_grid = QGridLayout()
-
+        # TODO: explain links
         # example: <a href='http://localhost:5000'>http://localhost:5000</a>
         self.link_localhost = QLabel(f"<a href='https://localhost:{port}'>https://localhost:{port}</a>")
         self.link_localhost.setTextFormat(Qt.TextFormat.RichText)
