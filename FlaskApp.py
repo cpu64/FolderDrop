@@ -1,10 +1,11 @@
 import urllib.parse
 import shutil
 import tempfile
-from flask import Flask, render_template, session, redirect, url_for, request, send_from_directory, abort, flash
+from flask import Flask, render_template, send_file, session, redirect, url_for, request, send_from_directory, abort, flash, jsonify
 from Utils import get_contents, Sort, size_of_dir, size_human_readable, num_of_items
 import os, uuid
 import time
+import zipfile
 
 class FlaskApp:
     # Class to share a directory over the internet
@@ -52,12 +53,14 @@ class FlaskApp:
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
         self.app.add_url_rule('/', 'index', self.index, methods=['GET', 'POST'])
         self.app.add_url_rule('/<path:subpath>', 'index', self.index, methods=['GET', 'POST'])
+
         self.app.add_url_rule('/download_folder', 'download_folder', self.download_folder)
         self.app.add_url_rule('/delete', 'delete', self.delete)
-
+        self.app.add_url_rule('/rename', 'rename', self.rename)
         self.app.add_url_rule('/create_folder', 'create_folder', self.create_folder)
 
-        self.app.add_url_rule('/rename', 'rename', self.rename)
+        self.app.add_url_rule('/multi_delete', 'multi_delete', self.multi_delete, methods=['POST'])
+        self.app.add_url_rule('/multi_download', 'multi_download', self.multi_download, methods=['POST'])
 
     # Route to serve the favicon
     def favicon(self):
@@ -95,8 +98,6 @@ class FlaskApp:
             shared_size = self.config['shared_size']
 
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human, shared_size=shared_size)
-
-            return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human)
 
         elif os.path.isfile(full_path):
             return send_from_directory(self.config['directory'], subpath, as_attachment=True)
@@ -141,6 +142,7 @@ class FlaskApp:
     def download_folder(self):
         folder_path = request.args.get('path')
         folder_path = os.path.join(self.config['directory'], folder_path.lstrip('/'))
+        folder_path = urllib.parse.unquote(folder_path)
 
         if not os.path.isdir(folder_path):
             self.log(f"Invalid folder path: {folder_path}")
@@ -197,7 +199,6 @@ class FlaskApp:
 
 
     def rename(self):
-
         path = request.args.get('path')
         new_path = request.args.get('new_path')
         if not path or not new_path:
@@ -266,39 +267,62 @@ class FlaskApp:
             # If the parent path is the root directory, redirect to the index page
             return redirect(url_for('index'))
 
-    # def rename(self):
-    #     original_path = request.args.get('path')
-    #     new_name = request.args.get('new_name')
-    #     if not original_path:
-    #         self.log("Renaming failed. No path provided.")
-    #         return self.respond("")
-    #     if not new_name:
-    #         self.log("Renaming failed. No new name provided.")
-    #         return self.respond(original_path)
+    # Route to download multiple files as a zip file
+    # paths: A list of file paths to download
+    # Returns a zip file for download
+    # If the paths are invalid, it will return a 404 error
+    def multi_download(self):
+        data = request.get_json(force=True, silent=True) or {}
+        paths = data.get('paths', [])
+        if not paths:
+            return jsonify({'success': False, 'message': 'No files selected'}), 400
 
-    #     # Decode the URL-encoded path
-    #     original_path = urllib.parse.unquote(original_path)
-    #     original_path = os.path.join(self.config['directory'], original_path.lstrip('/'))
-    #     new_name = urllib.parse.unquote(new_name)
-    #     new_path = os.path.join(os.path.dirname(original_path), new_name)
+        self.log(f"multi_download request.json: {data}")
 
-    #     try:
-    #         if os.path.exists(new_path):
-    #             self.log(f"Renaming failed. Path already exists: {new_path}")
-    #             self.send_notification(f"Renaming failed. Path already exists: {new_path}", 'error')
-    #             return self.respond(os.path.dirname(original_path))
+        tmp_zip = tempfile.NamedTemporaryFile(delete=False, suffix='.zip')
+        zip_filename = tmp_zip.name
 
-    #         os.rename(original_path, new_path)
-    #         self.log(f"Renamed: {original_path} to {new_name}")
-    #         self.send_notification(f"Renamed: {original_path} to {new_name}", 'success')
-    #     except Exception as e:
-    #         self.log(f"Renaming failed: {e}")
-    #         self.send_notification(f"Renaming failed: {e}", 'error')
+        with zipfile.ZipFile(zip_filename, 'w') as zipf:
+            for rel_path in paths:
+                abs_path = os.path.join(self.config['directory'], rel_path.lstrip('/'))
+                if os.path.exists(abs_path):
+                    arcname = os.path.basename(abs_path)
+                    zipf.write(abs_path, arcname=arcname)
 
-    #     # Redirect to the parent directory
-    #     parent_path = os.path.dirname(new_path)
-    #     if parent_path != self.config['directory']:
-    #         return self.respond(parent_path)
-    #     else:
-    #         # If the parent path is the root directory, redirect to the index page
-    #         return redirect(url_for('index'))
+        return send_file(zip_filename, as_attachment=True, download_name="selected_files.zip")
+    
+    # Route to delete multiple files and folders
+    # paths: A list of file and folder paths to delete
+    # Returns a JSON response with the status of the deletions
+    def multi_delete(self):
+        if not self.config['deleting']:
+            self.send_notification("Deleting files and folders is not allowed.", 'error')
+            return jsonify({'success': False, 'message': 'Deleting not allowed'}), 403
+
+        self.log(f"multi_delete request.json: {request.json}")
+
+        paths = request.json.get('paths', [])
+        deleted = []
+        errors = []
+
+        for rel_path in paths:
+            path = os.path.join(self.config['directory'], rel_path.lstrip('/'))
+            if os.path.exists(path):
+                try:
+                    if os.path.isdir(path):
+                        shutil.rmtree(path)
+                    else:
+                        os.remove(path)
+                    deleted.append(rel_path)
+                except Exception as e:
+                    errors.append({'path': rel_path, 'error': str(e)})
+            else:
+                errors.append({'path': rel_path, 'error': 'Not found'})
+
+        if deleted:
+            self.send_notification(f"Deleted: {', '.join(deleted)}", 'success')
+        if errors:
+            self.send_notification(f"Some deletions failed.", 'error')
+
+        return jsonify({'success': True, 'deleted': deleted, 'errors': errors})
+    
