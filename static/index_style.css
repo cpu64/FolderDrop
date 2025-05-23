@@ -209,6 +209,10 @@ ul {
     margin: 0;
 }
 
+.side-div form .custom-btn-file:not(:last-child) {
+    margin-bottom: 10px;
+}
+
 .last_row th{
     border-top: 1px solid rgba(248, 245, 245, 0.877);
 }
