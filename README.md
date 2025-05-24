@@ -31,4 +31,26 @@
 | System tray icon is clicked | Main window is restored if hidden | Main window is restored if hidden |
 | Main window is closed (X) | Window hides to system tray, server keeps running | Window hides to system tray, server keeps running |
 | `Logs:` button is pressed | Log panel is shown/hidden | Log panel is shown/hidden |
+| `Upload File` button is clicked | File picker dialog opens | File picker dialog opens |
+| File is selected and `Submit` is clicked | File uploads and appears in the file list | File uploads and appears in the file list |
+| Drag and drop a file onto the page | File uploads and appears in the file list | File uploads and appears in the file list |
+| Drag and drop a folder onto the page | All files in the folder upload and appear in the file list | All files in the folder upload and appear in the file list |
+| `Download Selected` is clicked with multiple files checked | A zip file containing the selected files is downloaded | A zip file containing the selected files is downloaded |
+| `Delete Selected` is clicked with multiple files checked | Selected files are deleted from the list after confirmation | Selected files are deleted from the list after confirmation |
+| Checkbox in table header (`select all`) is checked | All file checkboxes are checked | All file checkboxes are checked |
+| Any file checkbox is unchecked | `Select all` checkbox is automatically unchecked | `Select all` checkbox is automatically unchecked |
+| Right-click on a file row | Context menu appears with options | Context menu appears with options |
+| `Download` in context menu is clicked on a folder | Folder is downloaded as a zip file | Folder is downloaded as a zip file |
+| `Rename` in context menu is clicked | Prompt appears, file/folder is renamed after confirmation | Prompt appears, file/folder is renamed after confirmation |
+| `Delete` in context menu is clicked | Confirmation dialog appears, file/folder is deleted if confirmed | Confirmation dialog appears, file/folder is deleted if confirmed |
+| `Create new folder` in context menu is clicked | Prompt appears, new folder is created after confirmation | Prompt appears, new folder is created after confirmation |
+| Notification appears after an action | Notification fades out after 5 seconds | Notification fades out after 5 seconds |
+| Click on a file row (not a folder) | File is downloaded | File is downloaded |
+| Click on a folder row | Navigates into the folder | Navigates into the folder |
+| Press Backspace | Navigates to the parent folder | Navigates to the parent folder |
+| Login page is loaded | Password input and submit button are visible | Password input and submit button are visible |
+| Password is entered and `Submit` is clicked (correct password) | User is logged in and redirected to main page | User is logged in and redirected to main page |
+| Password is entered and `Submit` is clicked (incorrect password) | Error message is shown, user stays on login page | Error message is shown, user stays on login page |
+| Password field is empty and `Submit` is clicked | Browser prevents submission or shows required field warning | Browser prevents submission or shows required field warning |
+| Page is refreshed after failed login | Error message is cleared | Error message is cleared |
 
