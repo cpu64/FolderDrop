@@ -6,6 +6,7 @@ from Utils import get_contents, Sort, size_of_dir, size_human_readable, num_of_i
 import os, uuid
 import time
 import zipfile
+import Utils
 
 class FlaskApp:
     # Class to share a directory over the internet
@@ -95,7 +96,7 @@ class FlaskApp:
             readable = size_human_readable(dir_size)
             max_size_human = size_human_readable(int(self.config['max_size']))
 
-            shared_size = self.config['shared_size']
+            shared_size = f"{Utils.size_human_readable(Utils.size_of_dir(self.config['directory']))}"
 
             return render_template('index.html', files=get_contents(full_path, session['Sort']), subpath=subpath, parent_subpath=parent_subpath, dir_size=readable, num_of_items=items, max_size=max_size_human, shared_size=shared_size)
 
