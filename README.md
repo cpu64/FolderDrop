@@ -25,7 +25,9 @@ Enjoy common storage of files with your friends by sharing a folder on your comp
 * Bernardas Gustas
 
 # Technical Task
-The idea behind FolderDrop application is to enable file sharing through Universal Plug and Play – Internet Gateway Device protocol, which enables the app to automatically open ports on the router, making a local service available for access from the internet. This is achieved by using `igd` library in python. Below you can see a scheme of the protocol works.
+The idea behind FolderDrop application is to enable file sharing through Universal Plug and Play – Internet Gateway Device protocol, which enables the app to automatically open ports on the router, making a local service available for access from the internet. This is achieved by using `igd` library in python. Below you can see a scheme of the how the protocol works.
+
+   ![schem](https://github.com/user-attachments/assets/da32dbf7-5418-4345-b240-94135f6b682a)
 
 
 # Tests
